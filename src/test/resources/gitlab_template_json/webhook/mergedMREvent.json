@@ -1,0 +1,136 @@
+{
+  "object_kind" : "merge_request",
+  "event_type" : "merge_request",
+  "user" : {
+    "id" : 1,
+    "name" : "Administrator",
+    "username" : "root",
+    "avatar_url" : "https://www.gravatar.com/avatar/e633807329b048c67a0431d8df47057e?s=80&d=identicon",
+    "email" : "[REDACTED]"
+  },
+  "project" : {
+    "id" : 1,
+    "name" : "test_project",
+    "description" : null,
+    "web_url" : "http://localhost:9080/root/test_project",
+    "avatar_url" : null,
+    "git_ssh_url" : "ssh://git@localhost:9022/root/test_project.git",
+    "git_http_url" : "http://localhost:9080/root/test_project.git",
+    "namespace" : "Administrator",
+    "visibility_level" : 20,
+    "path_with_namespace" : "root/test_project",
+    "default_branch" : "main",
+    "ci_config_path" : null,
+    "homepage" : "http://localhost:9080/root/test_project",
+    "url" : "ssh://git@localhost:9022/root/test_project.git",
+    "ssh_url" : "ssh://git@localhost:9022/root/test_project.git",
+    "http_url" : "http://localhost:9080/root/test_project.git"
+  },
+  "object_attributes" : {
+    "assignee_id" : null,
+    "author_id" : 1,
+    "created_at" : "2022-09-04 16:44:58 UTC",
+    "description" : "A dummy pr",
+    "head_pipeline_id" : null,
+    "id" : 1,
+    "iid" : 100,
+    "last_edited_at" : null,
+    "last_edited_by_id" : null,
+    "merge_commit_sha" : "e819d39ed37c6d4b8e700b9e7f34c74c099c163b",
+    "merge_error" : null,
+    "merge_params" : {
+      "force_remove_source_branch" : true
+    },
+    "merge_status" : "can_be_merged",
+    "merge_user_id" : null,
+    "merge_when_pipeline_succeeds" : false,
+    "milestone_id" : null,
+    "source_branch" : "some-feature",
+    "source_project_id" : 1,
+    "state_id" : 1,
+    "target_branch" : "release/6.x.x",
+    "target_project_id" : 1,
+    "time_estimate" : 0,
+    "title" : "Some feature",
+    "updated_at" : "2022-09-04 16:44:58 UTC",
+    "updated_by_id" : null,
+    "url" : "http://localhost:9080/root/test_project/-/merge_requests/100",
+    "source" : {
+      "id" : 1,
+      "name" : "test_project",
+      "description" : null,
+      "web_url" : "http://localhost:9080/root/test_project",
+      "avatar_url" : null,
+      "git_ssh_url" : "ssh://git@localhost:9022/root/test_project.git",
+      "git_http_url" : "http://localhost:9080/root/test_project.git",
+      "namespace" : "Administrator",
+      "visibility_level" : 20,
+      "path_with_namespace" : "root/test_project",
+      "default_branch" : "main",
+      "ci_config_path" : null,
+      "homepage" : "http://localhost:9080/root/test_project",
+      "url" : "ssh://git@localhost:9022/root/test_project.git",
+      "ssh_url" : "ssh://git@localhost:9022/root/test_project.git",
+      "http_url" : "http://localhost:9080/root/test_project.git"
+    },
+    "target" : {
+      "id" : 1,
+      "name" : "test_project",
+      "description" : null,
+      "web_url" : "http://localhost:9080/root/test_project",
+      "avatar_url" : null,
+      "git_ssh_url" : "ssh://git@localhost:9022/root/test_project.git",
+      "git_http_url" : "http://localhost:9080/root/test_project.git",
+      "namespace" : "Administrator",
+      "visibility_level" : 20,
+      "path_with_namespace" : "root/test_project",
+      "default_branch" : "main",
+      "ci_config_path" : null,
+      "homepage" : "http://localhost:9080/root/test_project",
+      "url" : "ssh://git@localhost:9022/root/test_project.git",
+      "ssh_url" : "ssh://git@localhost:9022/root/test_project.git",
+      "http_url" : "http://localhost:9080/root/test_project.git"
+    },
+    "last_commit" : {
+      "id" : "3f46808aa9df132cb84b411e7c605642f6289005",
+      "message" : "My feature",
+      "title" : "My feature",
+      "timestamp" : "2022-09-04T16:44:58+00:00",
+      "url" : "http://localhost:9080/root/test_project/-/commit/3f46808aa9df132cb84b411e7c605642f6289005",
+      "author" : {
+        "name" : "Administrator",
+        "email" : "root@local"
+      }
+    },
+    "work_in_progress" : false,
+    "total_time_spent" : 0,
+    "time_change" : 0,
+    "human_total_time_spent" : null,
+    "human_time_change" : null,
+    "human_time_estimate" : null,
+    "assignee_ids" : [ ],
+    "reviewer_ids" : [ ],
+    "labels" : [ ],
+    "state" : "merged",
+    "blocking_discussions_resolved" : true,
+    "first_contribution" : false,
+    "action" : "merge"
+  },
+  "labels" : [ ],
+  "changes" : {
+    "state_id" : {
+      "previous" : 4,
+      "current" : 3
+    },
+    "updated_at" : {
+      "previous" : "2022-09-04 16:44:58 UTC",
+      "current" : "2022-09-04 16:44:58 UTC"
+    }
+  },
+  "repository" : {
+    "name" : "test_project",
+    "url" : "ssh://git@localhost:9022/root/test_project.git",
+    "description" : null,
+    "homepage" : "http://localhost:9080/root/test_project"
+  }
+}

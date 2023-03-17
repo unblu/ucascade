@@ -1,0 +1,61 @@
+:imagesdir: ../images
+image::Unblu-logo.png[]
+:jbake-title: User Guide
+
+== User guide
+
+Suppose you have a setup where ucascade is already configured correctly (see xref:../tech-docs/10_setup.adoc[Setup]), and you have a merge request (`!17`) where the branch `some-change` targets an old branch of `main` (`main/1.2.x`):
+
+image::mr_init.png[]
+
+You expect this change to go through the cascade: `some-change` -> `main/1.2.x` -> `main/1.3.x` -> `main/2.0.x` (see xref:multi-main.adoc[MultiMain Git branching model]).
+
+This situation can have one of two outcomes: either the cascade goes through with no intervention required on your part, or it doesn't.
+
+=== Happy case: you needn't do anything
+
+Once you have merged, the tool creates a follow-up MR (called _cascade MR_ in this description) whose title starts with `[ucascade] Auto MR`.
+
+image::mr_happy-case.png[]
+
+This _cascade MR_ is configured to be merged automatically as soon as the pipeline succeeds, or immediately if no pipeline is configured.
+
+And because 2 merges are needed for the complete cascade, the same pattern will happen again to obtain a merge between the main branches `main/1.3.x` and `main/2.0.x`.
+Because two merges are required for the complete cascade, the same pattern applies again to obtain a merge between the main branches `main/1.3.x` and `main/2.0.x`.
+At the end of the process, the original change is applied on all the relevant main branches.
+The xref:multi-main.adoc[MultiMain Git flow] is implemented correctly.
+
+image::mr_cascade.png[]
+
+==== Multiple MRs betwen the same main branches
+
+When multiple developers are working on the same project simultaneously, it can happen that each of them merges an MR targeting the same main branch, for example `main/1.3.x`.
+In this case, the first cascade MR between 2 main branches (`main/1.3.x` and `main/2.0.x` in the example) is merged.
+The second _cascade MR_ between the same main branches stays open until the first one is merged.
+After the merge of the first _cascade MR_ the tool proceeds with the merge of the next Auto MR.
+
+=== Other case: the cascade MR can't be merged
+
+When the tool cannot merge an MR directly, it sets the assignee to the user who merged the original MR.
+
+The reason for the merge failing can be anything, such as:
+
+* A merge conflict
+* An approval issue
+* The pipeline failing (because of a flaky test, for example)
+
+image::mr_error-case.png[]
+
+You have different options: continue to use the cascade MR or bypass it.
+
+==== 1— Continue to use the cascade MR
+
+As with any regular MR, you must perform the action necessary to be able to merge the MR (resolve conflict locally or online, add the missing approval, re-run a pipeline…).
+Then you can merge it, just like any other MR.
+
+IMPORTANT: Don't check the `[ ] squash` checkbox. You need to preserve the information about the commit that the _cascade MR_ was created from.
+
+
+==== 2— Bypass the cascade MR
+
+If you directly merge the main branch (`main/1.2.x` for example) that the source branch was created from (`mr17_main/1.2.x` in the example) into the target branch (the other main branch, `main/1.3.x` in the example), GitLab  automatically marks the _cascade MR_ as merged when the merge commit is pushed and ucascade deletes the unused source branch (`mr17_main/1.2.x`).

@@ -1,0 +1,11 @@
+{
+  "project_id" : 23,
+  "mr_number" : 122,
+  "user_id" : 9382,
+  "source_branch" : "feature/1.3.x/some-change",
+  "target_branch" : "main/1.3.x",
+  "mr_state" : "merged",
+  "merge_commit_sha" : "0c6f9d312b924bff313f60db2f269b5f4901cd95",
+  "mr_action" : "merge",
+  "gitlab_event_uuid" : "replay-394720"
+}

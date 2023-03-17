@@ -1,0 +1,13 @@
+:imagesdir: ../images
+image::Unblu-logo.png[]
+:jbake-title: Configuration File
+
+== Configuration file
+
+The branches of interest, and the direction and order of the consecutive automatic merges, is configured in the JSON file `ucascade.json`. This file must be present in the root directory of the repository.
+
+Example:
+[source, json]
+----
+include::ucascade.json[]
+----

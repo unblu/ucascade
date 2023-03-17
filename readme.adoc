@@ -1,0 +1,30 @@
+//tag::vardef[]
+:gh-repo-owner: unblu
+:gh-repo-name: ucascade
+
+:project-name: Ucascade
+:git-branch: main
+:license: http://www.apache.org/licenses/LICENSE-2.0
+:license-name: Apache 2.0 License
+
+:git-repository: {gh-repo-owner}/{gh-repo-name}
+:homepage: https://{gh-repo-owner}.github.io/{gh-repo-name}/
+:issues: https://github.com/{git-repository}/issues
+//end::vardef[]
+
+= {project-name}
+
+Bot for GitLab to implement the "Automatic branch merging" feature from Bitbucket, in order to use the MultiMain Git Flow in a project.
+
+image::_documentation/src/docs/images/mrFor12xMerged.drawio.png[]
+
+Read more on the link:{homepage}[project home page].
+
+== Get in touch
+
+Use the link:{issues}[{project-name} issue tracker] on GitHub.
+
+
+== License
+
+link:{license}[{license-name}]

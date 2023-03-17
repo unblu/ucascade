@@ -1,0 +1,7 @@
+:imagesdir: ../images
+image::Unblu-logo.png[]
+:jbake-title: Introduction
+
+== User documentation
+
+This section describes the xref:multi-main.adoc[MultiMain Git workflow] and xref:user-guide.adoc[how to use the tool].

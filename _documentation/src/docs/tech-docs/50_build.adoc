@@ -1,0 +1,69 @@
+:imagesdir: ../images
+:diagramsdir: ../diagrams
+image::Unblu-logo.png[]
+:jbake-title: Build
+
+== Build
+
+Please refer to the https://quarkus.io[Quarkus] documentation for more details.
+
+[[local]]
+=== Running the application locally
+
+You can run your application in dev mode that enables live coding using:
+[source, shell]
+----
+./gradlew --console=PLAIN quarkusDev
+----
+
+This will start the application is dev mode, available on port `8080`.
+
+For more details check the https://quarkus.io/guides/gradle-tooling[Quarkus Gradle Tooling] page.
+
+
+=== Packaging the application
+
+The application can be packaged using:
+
+[source, shell]
+----
+./gradlew build
+----
+It produces the `quarkus-run.jar` file in the `build/quarkus-app/` directory.
+Be aware that it’s not an _über-jar_ as the dependencies are copied into the `build/quarkus-app/lib/` directory.
+
+The application is now runnable using `java -jar build/quarkus-app/quarkus-run.jar`.
+
+If you want to build an _über-jar_, execute the following command:
+
+[source, shell]
+----
+./gradlew build -Dquarkus.package.type=uber-jar
+----
+
+The application, packaged as an _über-jar_, is now runnable using `java -jar build/ucascade-<version>-runner.jar`.
+
+
+=== Build a docker image
+
+[source, shell]
+----
+./gradlew build \
+    -Dquarkus.container-image.build=true \
+    -Dquarkus.container-image.push=true \
+    -Dquarkus.container-image.registry=<registry name> \
+    -Dquarkus.container-image.group=<image path> \ 
+    -Dquarkus.container-image.name=<image name> \
+    -Dquarkus.container-image.username=<registry username> \
+    -Dquarkus.container-image.password=<registry password>
+----
+
+
+=== Run the docker image
+
+[source]
+----
+docker run -p 8080:8080 -e "GITLAB_API_TOKEN=glpat-rXzx1n17cqUnmo437XSf" <ucascade image name> 
+----
+
+The server is running on the 8080 port.

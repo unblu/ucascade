@@ -1,0 +1,26 @@
+{
+  "name" : "main",
+  "commit" : {
+    "id" : "ead42072abe999a98350b264ae7ef5efdadb7211",
+    "short_id" : "ead42072",
+    "created_at" : "2022-09-04T16:43:52.000+00:00",
+    "parent_ids" : [ ],
+    "title" : "Initial commit",
+    "message" : "Initial commit",
+    "author_name" : "Administrator",
+    "author_email" : "root@local",
+    "authored_date" : "2022-09-04T16:43:52.000+00:00",
+    "committer_name" : "Administrator",
+    "committer_email" : "root@local",
+    "committed_date" : "2022-09-04T16:43:52.000+00:00",
+    "trailers" : { },
+    "web_url" : "http://localhost:9080/root/test_project/-/commit/ead42072abe999a98350b264ae7ef5efdadb7211"
+  },
+  "merged" : false,
+  "protected" : true,
+  "developers_can_push" : false,
+  "developers_can_merge" : false,
+  "can_push" : true,
+  "default" : true,
+  "web_url" : "http://localhost:9080/root/test_project/-/tree/main"
+}

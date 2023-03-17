@@ -1,0 +1,56 @@
+:imagesdir: ../images
+:diagramsdir: ../diagrams
+image::Unblu-logo.png[]
+:jbake-title: Workflow
+
+
+== High-level Workflow
+
+In this example, one automatic cascade merge is to be performed. E.g., User is merging `feature/1.3.x/my_feature` into `main/1.3.x`, which has as target the "final" branch `develop`.
+
+When the merge event targets a "final" branch, `ucascade` ignores it. Similarly, when a merge request created automatically by `ucascade` cannot be merged due to conflicts between the source and target branches, `ucascade` cannot continue and the execution is aborted. If properly configured, Gitlab notifies the users about the conflicting MR.
+
+[plantuml, format=svg]
+----
+include::{diagramsdir}/high-level-workflow.puml[]
+----
+
+== Technical Workflow - ucascade
+
+When using the "blocking" or "replay" xref:20_endpoints.adoc[endpoints], the returned object contains some indications about the items created by the different actions.
+If one of those actions is failing, the error message will be displayed in the returned object with the `_error` suffix.
+
+For a given merge request event, 3 different independent actions can be made:
+
+* `previous_auto_mr_merged`: if the merged-request event corresponds to the merge of an auto merge-request, and some other auto-merge requests are open between the same two branches, then the oldest auto merge request is merged.
+* `created_auto_mr`: if the merged-request event corresponds to the merge of any merge request that requires an auto merge-request to be created (to cascade the change to the next branch), it is created and potentially directly merged. With the "blocking" and "replay" endpoints, the returned object contains a `created_auto_mr.ucascade_state` field indicating if the action was successful or why it was not. It can take the values of:
+    ** MERGED: MR was created and merged succesfully
+    ** NOT_MERGED_CONFLICTS: MR was created but not merged due to existing conflicts between source and target branches that must be manually resolved
+    ** NOT_MERGED_CONCURRENT_MRS: MR was created but not merged due to another existing open merge request between the same source and target branches
+    ** NOT_MERGED_UNKNOWN_REASON: MR was created but not merged due to an unknown/unexpected reason
+* `existing_branch_deleted`: if the merged-request event corresponds to the merge of an auto merge-request and the source branch is still present, it gets deleted.
+
+The failure of one of those action will not prevent the next to be executed.
+
+
+=== previous_auto_mr_merged
+
+When a lot of changes are made concurrently, it can be that multiple auto-merge requests are created between the same main branches (`main/1.2.x` and `main/1.3.x`).
+In such cases, only the first one is set up to be merged directly.
+This means that when the auto-merge request finally gets merged, any other pending auto-merge requests between the same branches must still be merged.
+ucascade starts with the oldest one.
+
+=== created_auto_mr
+
+This explains how ucascade determines if a new auto-merge request is created or not:
+
+[plantuml, format=svg]
+----
+include::{diagramsdir}/technical-workflow.puml[]
+----
+
+During the final stage of the success case -- merging the MR -- `ucascade` verifies if that MR has any pipeline configured. If it has, the flag `merge_when_pipeline_succeeds` is set to `true`, meaning that the merge is only to happen after all its pipelines have finished successfully. Otherwise, if it doesn't have any pipeline, this flag is set to `false`, preventing GitLab to return a 405 error (see https://gitlab.com/gitlab-org/gitlab/-/issues/355455[issue #355455] for more details).
+
+=== existing_branch_deleted
+
+Sometime the source branch of an auto merge-request is not deleted by gitlab. Ucascade makes sure that this branch gets deleted once the corresponding merge request is merged.

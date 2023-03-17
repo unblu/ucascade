@@ -1,0 +1,83 @@
+plugins {
+    id 'java'
+    id 'io.quarkus'
+    id 'org.ajoberstar.grgit' version '5.0.0'
+    id 'com.diffplug.spotless' version '6.9.0'
+}
+
+wrapper {
+    gradleVersion = '7.5.1'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+    implementation 'io.quarkus:quarkus-reactive-routes'
+    implementation 'io.quarkus:quarkus-smallrye-health'
+    implementation 'io.quarkus:quarkus-container-image-jib'
+    implementation 'io.quarkus:quarkus-arc'
+    implementation 'org.gitlab4j:gitlab4j-api:5.0.1'
+    testImplementation 'io.quarkus:quarkus-junit5'
+    testImplementation 'io.rest-assured:rest-assured'
+    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.33.2'
+}
+
+group 'com.unblu.ucascade'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-parameters'
+}
+
+compileTestJava {
+    options.encoding = 'UTF-8'
+}
+
+test {
+    systemProperty "java.util.logging.manager", "org.jboss.logmanager.LogManager"
+}
+
+spotless {
+  java {
+    importOrder 'java', 'javax', 'org', 'com', ''
+    removeUnusedImports()
+
+    // available versions are: https://github.com/diffplug/spotless/tree/master/lib-extra/src/main/resources/com/diffplug/spotless/extra/eclipse_jdt_formatter
+    eclipse('4.21.0').configFile('.settings/org.eclipse.jdt.core.prefs')
+  }
+}
+
+def genOutputDir = file("$buildDir/generated/main-resources")
+
+def generateMainResourcesTask = tasks.register('generateMainResources') {
+    def generatedFile = new File(genOutputDir, "application.properties")
+    outputs.file(generatedFile)
+
+    doLast {
+        generatedFile.text = """
+gitlab.host=https://gitlab.com
+quarkus.container-image.tag=latest
+
+build.commit=${grgit.head().abbreviatedId}
+build.timestamp=${java.time.Instant.now().toString()}
+
+quarkus.index-dependency.gitlab4j.group-id=org.gitlab4j
+quarkus.index-dependency.gitlab4j.artifact-id=gitlab4j-api
+"""
+    }
+}
+
+sourceSets.main.resources.srcDir(genOutputDir)
+model {
+    tasks.processResources {
+        dependsOn generateMainResourcesTask
+    }
+}

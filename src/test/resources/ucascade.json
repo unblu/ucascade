@@ -1,0 +1,20 @@
+{
+  "branches": [
+     {
+        "sourceBranchPattern" : "release/5\.x\.x",
+        "targetBranch" : "release/6.x.x"
+     },
+     {
+        "sourceBranchPattern" : "slot/6\.x\.x/[0-9]{4}\.[0-9]{2}",
+        "targetBranch" : "release/6.x.x"
+     },
+     {
+        "sourceBranchPattern" : "release/6\.x\.x",
+        "targetBranch" : "main"
+     },
+     {
+        "sourceBranchPattern" : "slot/[0-9]{4}\.[0-9]{2}",
+        "targetBranch" : "main"
+     }
+  ]
+}

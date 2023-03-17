@@ -1,0 +1,37 @@
+{
+  "build_commit" : "6af21ad",
+  "build_timestamp" : "2022-01-01T07:21:58.378413Z",
+  "gitlab_event_uuid" : "62940263-b495-4f7e-b0e8-578c7307f13d",
+  "previous_auto_mr_merged" : {
+    "id" : 34,
+    "project_id" : 1,
+    "mr_number" : 34,
+    "title" : "[ucascade] Auto MR: 'main/1.2.x' -> 'main/1.3.x' (!29)",
+    "description" : "Automatic cascade merge request: `test` !29 --> `main/1.2.x` --> `main/1.3.x`",
+    "state" : "opened",
+    "merge_status" : "can_be_merged",
+    "has_conflicts" : false,
+    "source_branch" : "mr29_main/1.2.x",
+    "target_branch" : "main/1.3.x",
+    "web_url" : "https://gitlab.example.com/root/some-project/-/merge_requests/34",
+    "ucascade_state" : "MERGED"
+  },
+  "created_auto_mr" : {
+    "id" : 38,
+    "project_id" : 1,
+    "mr_number" : 38,
+    "assignee_id" : 40,
+    "title" : "[ucascade] Auto MR: 'main/1.3.x' -> 'develop' (!25)",
+    "description" : "Automatic cascade merge request: `test` !24 --> `main/1.2.x` !25 --> `main/1.3.x` --> develop",
+    "state" : "opened",
+    "merge_status" : "cannot_be_merged",
+    "has_conflicts" : true,
+    "source_branch" : "mr25_main/1.3.x",
+    "target_branch" : "main",
+    "web_url" : "https://gitlab.example.com/root/some-project/-/merge_requests/38",
+    "ucascade_state" : "NOT_MERGED_CONFLICTS"
+  },
+  "existing_branch_deleted" : {
+    "branch_name" : "mr21_main/1.2.x"
+  }
+}

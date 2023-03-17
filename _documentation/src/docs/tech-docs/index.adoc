@@ -1,0 +1,9 @@
+:imagesdir: ../images
+image::Unblu-logo.png[]
+:jbake-title: Introduction
+
+== Technical documentation
+
+*ucascade* is a Quarkus web service capable of orchestrating the cascade merging between branches of a Gitlab repository.
+
+This section provide technical details about the project.

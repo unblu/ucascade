@@ -1,0 +1,25 @@
+{
+  "id": 1,
+  "iid": 101,
+  "project_id": 1,
+  "title": "[ucascade-TEST] Auto MR: release/6.x.x -> main (!100)",
+  "description": "Test",
+  "state": "opened",
+  "created_at": "2016-06-08T00:19:52.638Z",
+  "updated_at": "2016-06-09T21:32:14.105Z",
+  "merge_status": "can_be_merged",
+  "approvals_required": 1,
+  "approvals_left": 0,
+  "approved_by": [
+    {
+      "user": {
+        "name": "ucascade",
+        "username": "ucascade",
+        "id": 1,
+        "state": "active",
+        "avatar_url": "http://www.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon",
+        "web_url": "http://localhost:3000/root"
+      }
+    }
+  ]
+}
