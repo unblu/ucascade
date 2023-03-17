@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="de">
+<head>
+  
+  <!-- user-docs/multi-main.html -->
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+
+  <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+  <meta content="jbake" name="generator">
+  <meta content="INDEX, FOLLOW" name="ROBOTS">
+
+  <title>MultiMain</title>
+  <meta content="docToolchain" property="og:title">
+  <meta content="build your dev docs the easy way..." property="og:description">
+  <meta content="website" property="og:type">
+  <meta content="docToolchain" property="og:site_name">
+  <meta content="docToolchain" itemprop="name">
+  <meta content="build your dev docs the easy way..." itemprop="description">
+  <meta content="summary" name="twitter:card">
+  <meta content="docToolchain" name="twitter:title">
+  <meta content="build your dev docs the easy way..." name="twitter:description">
+
+  <link as="style" href="../css/main.min.881fe5f7b53609f55ebfb496c7097c3b30b2e8ceb20a54bc6a48350ded67224f.css"
+        rel="preload">
+  <link href="../css/main.min.881fe5f7b53609f55ebfb496c7097c3b30b2e8ceb20a54bc6a48350ded67224f.css" integrity=""
+        rel="stylesheet">
+  <link href="../css/asciidoctor.css" rel="stylesheet">
+  <link href="../css/prettify.css" rel="stylesheet">
+
+    <!-- favicon generated with https://www.favicon-generator.org/ -->
+    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="apple-touch-icon" sizes="57x57" href="../apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="../apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="../apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="../apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="../apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="../apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="../apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="../apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="../android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="../ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+
+  <script src="../js/jquery-3.5.1.min.js"></script>
+  <style>
+      div.bg-light {
+          background-color: rgba(127, 180, 224, 0.3) !important;
+      }
+      //for blog posts
+
+  span.blogtag {
+      border-radius: 10px;
+      background-color: #30638E;
+      color: white;
+      padding: 5px 10px;
+  }
+  span.blogblogtag a {
+      color: white;
+      padding: 0
+  }
+  span.blogtag span {
+      margin-left: 10px;
+      border-radius: 10px;
+      background-color: white;
+      color: #30638E;
+  }
+  div.td-toc {
+    height: calc(100vh - 5rem) !important;
+  }
+  div#toctitle {
+    display: none
+  }
+  #td-section-nav {
+    max-height: calc(100vh - 4rem);
+    font-size: smaller;
+    line-hight: 1.1;
+  }
+  .td-page-meta {
+      font-size: smaller;
+      line-hight: 1.1;
+  }
+  #td-section-nav ul.td-sidebar-nav__section  {
+    padding-left:0px;
+  }
+  .match {
+      font-size: smaller;
+  }
+      .admonitionblock td.icon .fa:before {
+          font-size: xxx-large;
+      }
+  </style>
+
+   <style>
+    div.openblock.primary div.content, div.openblock.secondary div.content {
+        border: 1px solid #7a2518;
+        padding: 5px;
+    }
+    div.openblock.primary div.content div.content, div.openblock.secondary div.content div.content {
+        border: 0px solid #7a2518;
+        padding: 0;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .switch {
+        border-width: 1px 1px 0 1px;
+        border-style: solid;
+        border-color: #7a2518;
+        display: inline-block;
+    }
+
+    .switch--item {
+        padding: 2px 10px;
+        background-color: #ffffff;
+        color: #7a2518;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .switch--item:not(:first-child) {
+        border-width: 0 0 0 1px;
+        border-style: solid;
+        border-color: #7a2518;
+    }
+
+    .switch--item.selected {
+        background-color: #7a2519;
+        color: #ffffff;
+    }
+    </style>
+
+
+</head>
+
+<body onload="prettyPrint()" class="td-section">
+<header>
+	
+<nav class="js-navbar-scroll navbar navbar-expand navbar-dark flex-column flex-md-row td-navbar">
+    <a class="navbar-brand" href="../index.html">
+        <span class="navbar-logo"></span><span
+            class="font-weight-bold">ucascade</span>
+    </a>
+    <div class="td-navbar-nav-scroll ml-md-auto" id="main_navbar">
+        <ul class="navbar-nav mt-2 mt-lg-0">
+    <li class="nav-item mr-4 mb-2 mb-lg-0"><!--img src="../images/status.png" alt="status" width="16" height="16" onerror="this.style.display='none'"--></li>
+
+            <li class="nav-item mr-4 mb-2 mb-lg-0">
+                <a class="nav-link " href="../tech-docs/index.html"><span>Technical docs</span></a>
+            </li>
+
+            <li class="nav-item mr-4 mb-2 mb-lg-0">
+                <a class="nav-link active" href="../user-docs/index.html"><span>User docs</span></a>
+            </li>
+
+        </ul>
+    </div>
+    <div class="navbar-nav d-none d-lg-block" >
+        <form action="../search.html">
+        <input aria-label="Search this site…" autocomplete="off" class="form-control td-search-input"
+               placeholder=" Search this site…" type="search" name="q">
+        </form>
+    </div>
+</nav>
+
+</header>
+<div class="container-fluid td-outer">
+	<div class="td-main">
+		<div class="row flex-xl-nowrap">
+			<div class="col-12 col-md-3 col-xl-2 td-sidebar d-print-none">
+				<div class="td-sidebar__inner" id="td-sidebar-menu" >
+					
+        <form class="td-sidebar__search d-flex align-items-center d-lg-none" action="../search.html">
+
+            <input aria-label="Search this site…" name="q" autocomplete="off" class="form-control td-search-input"
+                   placeholder=" Search this site…" type="search">
+
+
+            <button aria-controls="td-docs-nav" aria-expanded="false"
+                    aria-label="Toggle section navigation" class="btn btn-link td-sidebar__toggle d-md-none p-0 ml-3 fas fa-bars" data-target="#td-section-nav"
+                    data-toggle="collapse" type="button">
+            </button>
+        </form>
+
+        <nav class="collapse td-sidebar-nav" id="td-section-nav" >
+
+            <ul class="td-sidebar-nav__section pr-md-3">
+                <li class="td-sidebar-nav__section-title">
+                    <span class="align-left pl-0 pr-2 active td-sidebar-link td-sidebar-link__section">User docs</span>
+                </li>
+                <ul>
+                    <li class="collapse show" id="docs">
+                        
+                        <ul class="td-sidebar-nav__section pr-md-3 ul-0">
+                            <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
+                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section "
+                                   href="../user-docs/index.html">Introduction</a>
+                            </li>
+                            <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
+                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section active"
+                                   href="../user-docs/multi-main.html">MultiMain</a>
+                            </li>
+                            <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
+                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section "
+                                   href="../user-docs/user-guide.html">User Guide</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+        </nav>
+
+				</div>
+			</div>
+			<div class="d-none d-xl-block col-xl-2 td-toc d-print-none">
+				<div class="td-page-meta ml-2 pb-1 pt-2 mb-0">
+					
+
+        <a href="https://github.com/unblu/ucascade/edit/main/_documentation/src/docs/user-docs/multi-main.adoc"
+           target="_blank"><i class="fa fa-edit fa-fw"></i> Improve this doc</a>
+
+
+        <a href="https://github.com/unblu/ucascade/issues?title=Docs%3A+Feedback+for+%27MultiMain%27&body=%0A%0A%5BEnter%20feedback%20here%5D%0A%0A%0A---%0A%23page:%20https://github.com/unblu/ucascade/edit/main/_documentation/src/docs/user-docs/multi-main.adoc%0A%23branch:%20null" target="_blank"><i
+                class="fab fa-github fa-fw"></i> Create an issue</a>
+
+        
+        <hr />
+
+        <div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_multimain_git_branching_model">MultiMain Git branching model</a>
+<ul class="sectlevel2">
+<li><a href="#_one_main_branch_per_maintained_version_stream">One main branch per maintained version stream</a></li>
+<li><a href="#_making_a_change_to_multiple_versions">Making a change to multiple versions</a></li>
+<li><a href="#_important_points">Important  points</a></li>
+<li><a href="#_tooling_support">Tooling support</a></li>
+<li><a href="#_appendix">Appendix</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+
+
+				</div>
+			</div>
+			<main class="col-12 col-md-9 col-xl-8 pl-md-5" role="main">
+				    <nav aria-label="breadcrumb" class="d-none d-md-block d-print-none">
+        <ol class="breadcrumb spb-1">
+            <!--li aria-current="page" class="breadcrumb-item active">
+                <a href="https://example.docsy.dev/docs/">Documentation</a>
+            </li-->
+
+        </ol>
+    </nav>
+
+
+    <div class="td-content">
+        <p>
+            
+<div class="imageblock">
+<div class="content">
+<img src="../images/Unblu-logo.png" alt="Unblu logo">
+</div>
+</div>
+<div class="sect1">
+<h2 id="_multimain_git_branching_model">MultiMain Git branching model</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The MultiMain Git branching model is useful for teams maintaining multiple versions of a project concurrently over a long time period (months or years).
+It is similar to the <a href="https://nvie.com/posts/a-successful-git-branching-model/">git-flow</a> branching model.</p>
+</div>
+<div class="sect2">
+<h3 id="_one_main_branch_per_maintained_version_stream">One main branch per maintained version stream</h3>
+<div class="imageblock">
+<div class="content">
+<img src="../images/init.drawio.png" alt="init.drawio">
+</div>
+</div>
+<div class="paragraph">
+<p>In the MultiMain branching model, you have one main branch per maintained version stream.
+Imagine you support patch releases for:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>version stream <code>1.2.x</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>released versions in this stream: <code>1.2.0</code>, <code>1.2.1</code>, <code>1.2.2</code> &#8230;&#8203; <code>1.2.13</code>, <code>1.2.14</code>, &#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>version stream <code>1.3.x</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>released versions in this stream: <code>1.3.0</code> &#8230;&#8203; <code>1.3.6</code>, <code>1.3.7</code>, <code>1.3.8</code> &#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Version stream <code>1.2.x</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Released versions in this stream: <code>1.2.0</code>, <code>1.2.1</code>, <code>1.2.2</code>,&#8230;&#8203;, <code>1.2.13</code>, <code>1.2.14</code>,&#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Version stream <code>1.3.x</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Released versions in this stream: <code>1.3.0</code>,&#8230;&#8203;, <code>1.3.6</code>, <code>1.3.7</code>, <code>1.3.8</code>&#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>At the same time, you&#8217;re preparing the next major version <code>2.0.0</code>, with its own dedicated stream <code>2.0.x</code>.</p>
+</div>
+<div class="paragraph">
+<p>This results in three main branches (<code>main/1.2.x</code>, <code>main/1.3.x</code>, and <code>main/2.0.x</code>), each corresponding to a different version stream.</p>
+</div>
+<div class="paragraph">
+<p>The naming pattern <code>main/&lt;stream&gt;</code>, where <code>&lt;stream&gt;</code> is the name of the stream, is fairly common in such cases.</p>
+</div>
+<div class="paragraph">
+<p>The <code>&lt;stream&gt;</code> part of branch names is a matter of project organization.
+If you work with a <code>major.minor.patch</code> version pattern, but maintain only one version per major version (version <code>2</code>, version <code>3</code>, version <code>4</code> and so on), the streams may be called <code>2.x.x</code>, <code>3.x.x</code>, or <code>4.x.x</code>.
+In that case, the branches might be named:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>main/2.x.x</code></p>
+</li>
+<li>
+<p><code>main/3.x.x</code></p>
+</li>
+<li>
+<p><code>main/4.x.x</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You could also drop the <code>x.x</code> suffix and only use:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>main/2</code></p>
+</li>
+<li>
+<p><code>main/3</code></p>
+</li>
+<li>
+<p><code>main/4</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Which naming convention you end up using is up to your team.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_making_a_change_to_multiple_versions">Making a change to multiple versions</h3>
+<div class="paragraph">
+<p>Some Git flows, such as the <a href="https://docs.gitlab.com/ee/topics/gitlab_flow.html#release-branches-with-gitlab-flow">GitLab flow</a>, recommend developing on the <code>main</code> branch and cherry-picking relevant changes to the branches corresponding to older maintained versions.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../images/gitlabFlow.drawio.png" alt="gitlabFlow.drawio">
+</div>
+</div>
+<div class="paragraph">
+<p>In the MultiMain flow, you alway do the change first the oldest version you are supporting (<code>main/1.2.x</code> in the example) and you apply the same change through all the branches corresponding to the branches you are supporting.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../images/mrFor12xMerged.drawio.png" alt="mrFor12xMerged.drawio">
+</div>
+</div>
+<div class="paragraph">
+<p>The key advantage of this flow is that it&#8217;s designed toensure the change is applied everywhere.
+It eliminates the risk that someone forgets to cherry-pick a commit.
+Additionally, you only have to solve potential merge conflicts once, when applying the change the first time, and not every time you cherry-pick a commit to an older branch.</p>
+</div>
+<div class="paragraph">
+<p>You can define that the developer who makes the change must apply their change to all branches.
+When you work with cherry-picking, it&#8217;s often up to the build engineer to backport changes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_important_points">Important  points</h3>
+<div class="sect3">
+<h4 id="_always_merge_forward">Always merge forward</h4>
+<div class="paragraph">
+<p>It can happen that a change is only relevant for older branches and not for the newer versions (because the feature fixed on an older branch no longer exists in the newer version).
+Sometimes, a change is only relevant for older branches, for example because the feature fixed on an older branch no longer exists in newer versions.
+In such cases, you must still merge through the different branches with an empty merge commit.</p>
+</div>
+<div class="paragraph">
+<p>In the diagram below, the feature corresponding to the commits <code>f1</code> and <code>f2</code> is no longer present in version <code>2.0.x</code> and should only be merged into the branch <code>main/1.3.x</code>:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../images/emptyMergeCommit.drawio.png" alt="emptyMergeCommit.drawio">
+</div>
+</div>
+<div class="paragraph">
+<p>To make sure the branch <code>feature/1.3.x/some-change</code> is only merged into <code>main/1.3.x</code>, after having created the first merge commit <code>m</code>, check out the branch <code>main/2.0.x</code> and run the following command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="bash">git merge -s ours main/1.3.x</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This way the developer doing the next change on an older version will not have any conflict or unfinished merge problems when he tries to cascade his change through the branches.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_bottleneck">Bottleneck</h4>
+<div class="paragraph">
+<p>If there is a conflict between 2 main branches when cascading a given change, this can create a bottleneck (the subsequent changes that should also be cascaded are stuck).</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../images/twoFeatureBranchesDirectMerge.drawio.png" alt="twoFeatureBranchesDirectMerge.drawio">
+</div>
+</div>
+<div class="paragraph">
+<p>It might take time to solve the conflicts to create the merge commit that correspond to the cascade of the change.</p>
+</div>
+<div class="paragraph">
+<p>The solution to this problem is to work with two feature branches:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../images/twoFeatureBranches.drawio.png" alt="twoFeatureBranches.drawio">
+</div>
+</div>
+<div class="paragraph">
+<p>A second branch <code>feature/2.0.x/some-change</code>, branched from <code>main/2.0.x</code> is created.</p>
+</div>
+<div class="paragraph">
+<p>The branch <code>feature/1.3.x/some-change</code> is merged into <code>feature/2.0.x/some-change</code> (this creates commit <code>f3</code>)</p>
+</div>
+<div class="paragraph">
+<p>Once the 2 features branches are ready (it doesn&#8217;t matter how much time it takes to have everything looking good).
+Two merge requests can be opened for each feature branch:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>First <code>feature/2.0.x/some-change</code> is merged to <code>main/2.0.x</code></p>
+</li>
+<li>
+<p>Then <code>feature/1.3.x/some-change</code> is merge to <code>main/1.3.x</code> which can be directly cascaded to <code>main/2.0.x</code> since the conflict was already resolved with the first merge request.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../images/twoFeatureBranchesMerged.drawio.png" alt="twoFeatureBranchesMerged.drawio">
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tooling_support">Tooling support</h3>
+<div class="sect3">
+<h4 id="_bitbucket">Bitbucket</h4>
+<div class="paragraph">
+<p>See Bitbucket&#8217;s <a href="https://confluence.atlassian.com/bitbucketserver/automatic-branch-merging-776639993.html">automatic branch merging</a> feature.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_gitlab">GitLab</h4>
+<div class="paragraph">
+<p>This project implements the MultiMain branching model for GitLab.
+The <code>ucascade</code> tool creates the necessary follow-up merge requests when an initial merge request is merged into a main branch.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_appendix">Appendix</h3>
+<div class="sect3">
+<h4 id="_legacy_naming">Legacy naming</h4>
+<div class="paragraph">
+<p>Some projects more in line with the git-flow terminology give their <code>main</code> branches different names:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>release/1.2.x</code></p>
+</li>
+<li>
+<p><code>release/1.3.x</code></p>
+</li>
+<li>
+<p><code>develop</code> (for the version <code>2.0.x</code>)</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../images/old-names.drawio.png" alt="old names.drawio">
+</div>
+</div>
+<div class="paragraph">
+<p>Only the names of the branches differ, but the idea is the same.</p>
+</div>
+<div class="paragraph">
+<p>Having a different name for <code>develop</code> doesn´t provide any benefits, since it&#8217;s no different from the other “release” branches.
+Also, occasional contributors to a project may find it difficult to determine which version the <code>develop</code> branch corresponds to.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+        </p>
+
+        <style>
+.feedback--answer {
+    display: inline-block;
+}
+
+.feedback--answer-no {
+    margin-left: 1em;
+}
+
+.feedback--response {
+    display: none;
+    margin-top: 1em;
+}
+
+.feedback--response__visible {
+    display: block;
+}
+</style>
+
+<div class="d-print-none">
+    <h2 class="feedback--title">Feedback</h2>
+    <p class="feedback--question">Was this page helpful?</p>
+    <button class="feedback--answer feedback--answer-yes">Yes</button>
+    <button class="feedback--answer feedback--answer-no">No</button>
+    <p class="feedback--response feedback--response-yes">
+        Glad to hear it! Please <a href="https://github.com/unblu/ucascade/issues?title=Docs%3A+Feedback+for+%27MultiMain%27%20%F0%9F%91%8D&body=%0A%0A%5BEnter%20feedback%20here%5D%0A%0A%0A---%0A%23page:user-docs/multi-main.adoc">tell us
+    how we can improve</a>.
+    </p>
+    <p class="feedback--response feedback--response-no">
+        Sorry to hear that. Please <a href="https://github.com/unblu/ucascade/issues?title=Docs%3A+Feedback+for+%27MultiMain%27%20%F0%9F%91%8E&body=%0A%0A%5BEnter%20feedback%20here%5D%0A%0A%0A---%0A%23page:user-docs/multi-main.adoc">tell
+    us how we can improve</a>.
+    </p>
+</div>
+<script>
+    const yesButton = document.querySelector('.feedback--answer-yes');
+    const noButton = document.querySelector('.feedback--answer-no');
+    const yesResponse = document.querySelector('.feedback--response-yes');
+    const noResponse = document.querySelector('.feedback--response-no');
+    const disableButtons = () => {
+        yesButton.disabled = true;
+        noButton.disabled = true;
+    };
+    const sendFeedback = (value) => {
+        if (typeof ga !== 'function') return;
+        const args = {
+            command: 'send',
+            hitType: 'event',
+            category: 'Helpful',
+            action: 'click',
+            label: window.location.pathname,
+            value: value
+        };
+        ga(args.command, args.hitType, args.category, args.action, args.label, args.value);
+    };
+    yesButton.addEventListener('click', () => {
+        yesResponse.classList.add('feedback--response__visible');
+        disableButtons();
+        sendFeedback(1);
+    });
+    noButton.addEventListener('click', () => {
+        noResponse.classList.add('feedback--response__visible');
+        disableButtons();
+        sendFeedback(0);
+    });
+</script>
+
+
+        <br>
+
+        <!--div class="text-muted mt-5 pt-3 border-top">Last modified July 3, 2019: <a
+                href="https://github.com/google/docsy-example/commit/d6aa89c8b24089d7e6741030864eff209465e896">Added
+            links to user guide repo (d6aa89c)</a>
+        </div-->
+    </div>
+
+
+			</main>
+
+		</div>
+	</div>
+
+
+	
+    <!--footer class="footer mt-auto py-3 bg-light">
+        <div class="container">
+            <span class="text-muted">&copy; 2020 | based on <a href="https://arc42.org">arc42 7.0</a> | mixed with <a href="http://getbootstrap.com/">Bootstrap v5.0.0-beta</a> | Baked with <a href="http://jbake.org">JBake v2.6.7</a></span>
+        </div>
+    </footer-->
+
+    <footer class="bg-dark py-5 row d-print-none">
+        <div class="container-fluid mx-sm-5">
+            <div class="row">
+                <div class="col-6 col-sm-4 text-xs-center order-sm-2">
+
+
+                    <ul class="list-inline mb-0">
+                        
+                        <li aria-label="User mailing list" class="list-inline-item mx-2 h3" data-original-title="User mailing list" data-placement="top"
+                            data-toggle="tooltip" title="">
+                            <a class="text-white" href="mailto:mailto:dev@unblu.com" rel="noopener noreferrer"
+                               target="_blank">
+                                <i class="fa fa-envelope"></i>
+                            </a>
+                        </li>
+                        
+                        
+                        <li aria-label="Twitter" class="list-inline-item mx-2 h3" data-original-title="Twitter" data-placement="top"
+                            data-toggle="tooltip" title="">
+                            <a class="text-white" href="https://twitter.com/Unblu" rel="noopener noreferrer"
+                               target="_blank">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                        </li>
+                        
+                        
+                    </ul>
+
+
+                </div>
+                <div class="col-6 col-sm-4 text-right text-xs-center order-sm-3">
+
+
+                    <ul class="list-inline mb-0">
+
+                        
+                        <li aria-label="GitHub" class="list-inline-item mx-2 h3" data-original-title="GitHub" data-placement="top"
+                            data-toggle="tooltip" title="">
+                            <a class="text-white" href="https://github.com/unblu/ucascade" rel="noopener noreferrer"
+                               target="_blank">
+                                <i class="fab fa-github"></i>
+                            </a>
+                        </li>
+                        
+
+                        
+
+
+                    </ul>
+
+
+                </div>
+                <div class="col-12 col-sm-4 text-center py-2 order-sm-2">
+
+                        
+
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/popper.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+
+
+    <script src="../js/main.min.b5fc1b29d2465835844254bd4d804738eaf24c0cec53009b4c6899989be55a47.js"></script>
+    <script src="../js/blocks.js" ></script>
+    <script src="../js/prettify.js"></script>
+
+
+</body>
+</html>

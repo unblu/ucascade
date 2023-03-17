@@ -1,0 +1,43 @@
+@startuml high-level-workflow
+'normal case'
+autonumber
+
+actor       UserA          as user
+box "Gitlab" #LightYellow
+boundary    Gitlab_UI       as ui
+entity      Gitlab_Backend  as gitlab
+control     Gitlab_Webhook  as webhook
+control     Gitlab_REST_API as restAPI
+end box
+box "Ucascade" #LightBlue
+entity      Ucascade        as ucascade
+end box
+
+user->ui: Merge #MR1 \n E.g., feature/1.3.x/my_feature -> main/1.3.x
+user<--ui: Ok
+gitlab->gitlab: Execute pipeline
+webhook->ucascade: Fire MergeRequestEvent\n with state "merged" and action "merge" for MR #1
+ucascade->restAPI: Compare refs - nothing to do if no diff\n E.g., between commit e819d39 and develop
+ucascade->restAPI: Create Branch\n E.g., mr1_main/1.3.x from e819d39
+ucascade->restAPI: Create MR #2\n E.g., mr1_main/1.3.x -> develop
+alt apiTokenApprover is set case
+    ucascade->restAPI: Approve MR #2
+end
+loop 20 times or until ready
+    ucascade->restAPI: Check creation status of MR #2
+    ucascade<--restAPI: Ready / Not ready
+    ucascade->ucascade: Sleep 100ms
+end
+alt MR #2 can be merged case
+    ucascade->restAPI: Accept MR #2
+    gitlab->gitlab: Execute pipeline
+    webhook->ucascade: Fire MergeRequestEvent\n with state "merged" and action "merge" for MR #2
+else #Pink MR #2 cannot be merged case
+    loop until MR merger is different than the ucascade user
+        ucascade->restAPI: Get preceding MR
+        restAPI-->ucascade: MR
+    end
+    ucascade->restAPI: Assign current MR to the MR merger found\n(the user responsible for the cascade: UserA)
+    user<-gitlab: Notification requiring manual intervention due to conflicts in MR #2
+end
+@enduml

@@ -1,0 +1,53 @@
+@startuml technical-workflow
+start
+repeat
+if (incoming request?) then (yes)
+    if (request is valid and corresponds to a merge action?) then (yes)
+        :fetch properties from the MergeRequestEvent object;
+        :try to read nextMainBranch from configuration file;
+        if (nextMainBranch is configured?) then (yes)
+            if (nextMainBranch exists remotely?) then (yes)
+                :create new branch from targetBranch;
+                :create new MR from the new branch into the nextMainBranch;
+                if (apiTokenApprover is set?) then (yes)
+                    :approve the just created MR as that user (apiTokenApprover);
+                else (no)
+                endif
+                #SkyBlue:initialize countDown to 100;
+                note right 
+                    Timeout to avoid the possibility
+                    of getting stuck in the loop forever
+                end note
+                while(MRStatus is "checking" and countdown > 0?) is (yes)
+                    #SkyBlue:decrement countDown by 1;
+                    :sleep 100ms;
+                    note right: Wait for Gitlab to prepare MR
+                    :update MRStatus from Gitlab;
+                endwhile (no)
+                if (countDown == 0) then (yes) 
+                    :error;
+                else (no)
+                    switch(Is MRStatus == can_be_merged?)
+                    case (yes)
+                        if (MR has pipeline(s)?) then (yes)
+                            :merge when pipeline succeeds;
+                        else (no)
+                            :merge immediately;
+                        endif
+                    case (no)
+                        while(MR merger) is (ucascade user)
+                            :get user that merged the preceding MR;
+                        endwhile (not the ucascade user)
+                        :update MR to set its assignee to the MR merger;
+                    endswitch
+                endif
+            else (no)
+                #red:discard with error;
+            endif
+            else (no)
+                :nothing to do;
+        endif
+    endif
+endif
+repeat while
+@enduml
