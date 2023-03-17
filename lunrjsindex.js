@@ -2,14 +2,6 @@ var documents = [
 
 {
     "id": 0,
-    "uri": "tech-docs/10_setup.html",
-    "menu": "tech-docs",
-    "title": "Setup",
-    "text": " Table of Contents Setup GitLab: Generate an API Token Application Setup GitLab: Webhook Setup Branches: Merge Model Dev setup Working with a remote GitLab instance Setup In order to interact with a given Gitlab instance through its REST API, ucascade needs to be authorized and authenticated. To do so, together with Gitlab&#8217;s instance URL, an API token must be provided. In case merge-requests require one approval to be merged, an additional API token must be provided. If the merge-request author is allowed to approve its own merge-requests, both API tokens can be identical. GitLab: Generate an API Token You will need a personal access token or a group access in order for the tool to interact with your repositories on GitLab. In addition, depending on the project&#8217;s configuration, you might need an extra API token, which can be obtained in the same way as the first one. All the actions are done using the REST API of GitLab. You will need the api scope. Application Setup Some configurations are available for ucascade: Example application.properties file gitlab.host=https://gitlab.com gitlab.api.token=glpat-rXzx1n17cqUnmo437XSf gitlab.api.token.approver=glpat-fGzx1n17cqUnmo437GGs You can use any of the Configuration Sources supported by Quarkus to set the values. For example you can use following system property to set the gitlab.api.token value: Setting gitlab.api.token using a system property: export GITLAB_API_TOKEN=glpat-rXzx1n17cqUnmo437XSf GitLab host Specify the location of the GitLab server: key: gitlab.host default value https://gitlab.com GitLab api token Specify the api token value used when ucascade is performing REST calls. key: gitlab.api.token No default value. Mandatory for the application to start GitLab api token approver Specify the api token value used when ucascade is approving a merge-request through a REST call. key: gitlab.api.token.approver No default value. If not set, ucascade will merge the merge-requests without approving them first. If set, ucascade will approve the merge-request using that value. GitLab: Webhook Setup In the corresponding repository or group configure a Webhook pointing to the location where ucascade is available: URL: &lt;server url&gt;/ucascade/merge-request Trigger: Merge request events Warning From an operational point of view, it might be safer to deploy ucascade to a server where only your GitLab instance has access. Branches: Merge Model As explained in the configuration file section , in order to configure how the automatic merges are performed, a JSON file named ucascade.json must be present at the root of the project. Dev setup The application can be started locally, check local build section. Working with a remote GitLab instance If you are working locally with a remote gitlab instance (like https://gitlab.com/ ), adding some proxy might be useful: With a tool like ngrok you will get a public url (something like https://2a01-8943-19d-e0a-8b20-645f-f7a2-c2d-9be1.ngrok.io ) that points to your localhost computer. start ngrok (assuming ucascade is running locally on port 8080) ngrok http 8080 With a tool like mitmproxy you can proxy the remote instance to capture the REST requests made by ucascade to the remote instance: start mitmproxy mitmproxy -p 8888 --mode reverse:https://gitlab.com And then make ucascade use localhost:8888 instead of gitlab.com directly: use mitmproxy export GITLAB_HOST=http://localhost:8888 "
-},
-
-{
-    "id": 1,
     "uri": "tech-docs/20_endpoints.html",
     "menu": "tech-docs",
     "title": "Endpoints",
@@ -17,19 +9,27 @@ var documents = [
 },
 
 {
-    "id": 2,
-    "uri": "tech-docs/11_ucascade-configuration-file.html",
+    "id": 1,
+    "uri": "tech-docs/10_setup.html",
     "menu": "tech-docs",
-    "title": "Configuration File",
-    "text": " Table of Contents Configuration file Configuration file The branches of interest, and the direction and order of the consecutive automatic merges, is configured in the JSON file ucascade.json . This file must be present in the root directory of the repository. Example: { branches : [ { sourceBranchPattern : main/1\\.2\\.x, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x, targetBranch : main/2.0.x }, { sourceBranchPattern : main/2\\.0\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/2.0.x } ] } "
+    "title": "Setup",
+    "text": " Table of Contents Setup GitLab: Generate an API Token Application Setup GitLab: Webhook Setup Branches: Merge Model Dev setup Working with a remote GitLab instance Setup In order to interact with a given Gitlab instance through its REST API, ucascade needs to be authorized and authenticated. To do so, together with Gitlab&#8217;s instance URL, an API token must be provided. In case merge-requests require one approval to be merged, an additional API token must be provided. If the merge-request author is allowed to approve its own merge-requests, both API tokens can be identical. GitLab: Generate an API Token You will need a personal access token or a group access in order for the tool to interact with your repositories on GitLab. In addition, depending on the project&#8217;s configuration, you might need an extra API token, which can be obtained in the same way as the first one. All the actions are done using the REST API of GitLab. You will need the api scope. Application Setup Some configurations are available for ucascade: Example application.properties file gitlab.host=https://gitlab.com gitlab.api.token=glpat-rXzx1n17cqUnmo437XSf gitlab.api.token.approver=glpat-fGzx1n17cqUnmo437GGs You can use any of the Configuration Sources supported by Quarkus to set the values. For example you can use following system property to set the gitlab.api.token value: Setting gitlab.api.token using a system property: export GITLAB_API_TOKEN=glpat-rXzx1n17cqUnmo437XSf GitLab host Specify the location of the GitLab server: key: gitlab.host default value https://gitlab.com GitLab api token Specify the api token value used when ucascade is performing REST calls. key: gitlab.api.token No default value. Mandatory for the application to start GitLab api token approver Specify the api token value used when ucascade is approving a merge-request through a REST call. key: gitlab.api.token.approver No default value. If not set, ucascade will merge the merge-requests without approving them first. If set, ucascade will approve the merge-request using that value. GitLab: Webhook Setup In the corresponding repository or group configure a Webhook pointing to the location where ucascade is available: URL: &lt;server url&gt;/ucascade/merge-request Trigger: Merge request events Warning From an operational point of view, it might be safer to deploy ucascade to a server where only your GitLab instance has access. Branches: Merge Model As explained in the configuration file section , in order to configure how the automatic merges are performed, a JSON file named ucascade.json must be present at the root of the project. Dev setup The application can be started locally, check local build section. Working with a remote GitLab instance If you are working locally with a remote gitlab instance (like https://gitlab.com/ ), adding some proxy might be useful: With a tool like ngrok you will get a public url (something like https://2a01-8943-19d-e0a-8b20-645f-f7a2-c2d-9be1.ngrok.io ) that points to your localhost computer. start ngrok (assuming ucascade is running locally on port 8080) ngrok http 8080 With a tool like mitmproxy you can proxy the remote instance to capture the REST requests made by ucascade to the remote instance: start mitmproxy mitmproxy -p 8888 --mode reverse:https://gitlab.com And then make ucascade use localhost:8888 instead of gitlab.com directly: use mitmproxy export GITLAB_HOST=http://localhost:8888 "
 },
 
 {
-    "id": 3,
+    "id": 2,
     "uri": "tech-docs/40_unit-test-example-files.html",
     "menu": "tech-docs",
     "title": "Unit test files",
     "text": " Table of Contents Unit test example files Unit test example files When the unit tests are running, the GitLab server is mocked. Wiremock is serving example responses from the src/test/resources/gitlab_template_json folder. Those files can be generated by the code in the ResetTestExampleFilesMain class. Adjust the location of the GitLab server ( URL constant). It can be a local GitLab instance or a remote one like gitlab.com. Adjust the access token ( TOKEN constant) The Webhook event is received on a server running on localhost:9999 (started by ResetTestExampleFilesMain ). If this server is not accessible by GitLab, start a tool like ngrok (with ngrok http 9999 ) and adjust the hook server value ( HOOK_URL constant) If you decide to use http://localhost:9999 for HOOK_URL (without ngrok), then you might need to change a setting in your local GitLab instance (see Allow webhook and service requests to local network ). If your gitlab instance is running in a docker container, be sure to run ResetTestExampleFilesMain in docker as well or make the host network available for the containers. "
+},
+
+{
+    "id": 3,
+    "uri": "tech-docs/11_ucascade-configuration-file.html",
+    "menu": "tech-docs",
+    "title": "Configuration File",
+    "text": " Table of Contents Configuration file Configuration file The branches of interest, and the direction and order of the consecutive automatic merges, is configured in the JSON file ucascade.json . This file must be present in the root directory of the repository. Example: { branches : [ { sourceBranchPattern : main/1\\.2\\.x, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x, targetBranch : main/2.0.x }, { sourceBranchPattern : main/2\\.0\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/2.0.x } ] } "
 },
 
 {
@@ -50,18 +50,18 @@ var documents = [
 
 {
     "id": 6,
-    "uri": "tech-docs/index.html",
-    "menu": "tech-docs",
-    "title": "Introduction",
-    "text": " Table of Contents Technical documentation Technical documentation ucascade is a Quarkus web service capable of orchestrating the cascade merging between branches of a Gitlab repository. This section provide technical details about the project. "
-},
-
-{
-    "id": 7,
     "uri": "user-docs/user-guide.html",
     "menu": "user-docs",
     "title": "User Guide",
     "text": " Table of Contents User guide Happy case: you needn&#8217;t do anything Other case: the cascade MR can&#8217;t be merged User guide Suppose you have a setup where ucascade is already configured correctly (see Setup ), and you have a merge request ( !17 ) where the branch some-change targets an old branch of main ( main/1.2.x ): You expect this change to go through the cascade: some-change &#8594; main/1.2.x &#8594; main/1.3.x &#8594; main/2.0.x (see MultiMain Git branching model ). This situation can have one of two outcomes: either the cascade goes through with no intervention required on your part, or it doesn&#8217;t. Happy case: you needn&#8217;t do anything Once you have merged, the tool creates a follow-up MR (called cascade MR in this description) whose title starts with [ucascade] Auto MR . This cascade MR is configured to be merged automatically as soon as the pipeline succeeds, or immediately if no pipeline is configured. And because 2 merges are needed for the complete cascade, the same pattern will happen again to obtain a merge between the main branches main/1.3.x and main/2.0.x . Because two merges are required for the complete cascade, the same pattern applies again to obtain a merge between the main branches main/1.3.x and main/2.0.x . At the end of the process, the original change is applied on all the relevant main branches. The MultiMain Git flow is implemented correctly. Multiple MRs betwen the same main branches When multiple developers are working on the same project simultaneously, it can happen that each of them merges an MR targeting the same main branch, for example main/1.3.x . In this case, the first cascade MR between 2 main branches ( main/1.3.x and main/2.0.x in the example) is merged. The second cascade MR between the same main branches stays open until the first one is merged. After the merge of the first cascade MR the tool proceeds with the merge of the next Auto MR. Other case: the cascade MR can&#8217;t be merged When the tool cannot merge an MR directly, it sets the assignee to the user who merged the original MR. The reason for the merge failing can be anything, such as: A merge conflict An approval issue The pipeline failing (because of a flaky test, for example) You have different options: continue to use the cascade MR or bypass it. 1— Continue to use the cascade MR As with any regular MR, you must perform the action necessary to be able to merge the MR (resolve conflict locally or online, add the missing approval, re-run a pipeline…). Then you can merge it, just like any other MR. Important Don&#8217;t check the [ ] squash checkbox. You need to preserve the information about the commit that the cascade MR was created from. 2— Bypass the cascade MR If you directly merge the main branch ( main/1.2.x for example) that the source branch was created from ( mr17_main/1.2.x in the example) into the target branch (the other main branch, main/1.3.x in the example), GitLab automatically marks the cascade MR as merged when the merge commit is pushed and ucascade deletes the unused source branch ( mr17_main/1.2.x ). "
+},
+
+{
+    "id": 7,
+    "uri": "tech-docs/index.html",
+    "menu": "tech-docs",
+    "title": "Introduction",
+    "text": " Table of Contents Technical documentation Technical documentation ucascade is a Quarkus web service capable of orchestrating the cascade merging between branches of a Gitlab repository. This section provide technical details about the project. "
 },
 
 {
