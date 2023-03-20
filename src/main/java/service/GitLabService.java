@@ -128,6 +128,8 @@ public class GitLabService {
 					gitlabEventUUID, projectId, userId, targetBranch, mrNumber, mrState, mrAction);
 		}
 
+		Log.infof("GitlabEvent: '%s' | Finished handling event with result %s",
+				gitlabEventUUID, result);
 		return result;
 	}
 
@@ -209,14 +211,18 @@ public class GitLabService {
 		String branchPattern = addMrPrefixPattern(sourceBranchOfSourceBranch);
 
 		// do not merge if other merge requests exist between the same source and target branches
-		boolean concurrentMrs = getOpenMergeRequests(gitlabEventUUID, project).anyMatch(openMr -> openMr.getIid() < iid &&
-				openMr.getSourceBranch().matches(branchPattern) &&
-				openMr.getTargetBranch().equals(targetBranch));
-		if (!concurrentMrs) {
+		Optional<MergeRequest> findConcurrentMr = getOpenMergeRequests(gitlabEventUUID, project)
+				.filter(openMr -> openMr.getIid() < iid &&
+						openMr.getSourceBranch().matches(branchPattern) &&
+						openMr.getTargetBranch().equals(targetBranch))
+				.sorted(Comparator.comparingLong(MergeRequest::getIid))
+				.findFirst();
+		if (findConcurrentMr.isEmpty()) {
 			return acceptAutoMergeRequest(gitlabEventUUID, mr);
 		}
 		MergeRequestResult result = new MergeRequestResult(mr);
 		result.setUcascadeState(MergeRequestUcascadeState.NOT_MERGED_CONCURRENT_MRS);
+		Log.infof("GitlabEvent: '%s' | MR '!%d' in project '%d' was not merged, because of concurrent MR already open '%d'", gitlabEventUUID, mr.getIid(), project, findConcurrentMr.get().getIid());
 		return result;
 	}
 

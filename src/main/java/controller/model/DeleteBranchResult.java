@@ -40,4 +40,9 @@ public class DeleteBranchResult {
 		DeleteBranchResult other = (DeleteBranchResult) obj;
 		return Objects.equals(branchName, other.branchName);
 	}
+
+	@Override
+	public String toString() {
+		return "DeleteBranchResult [branchName=" + branchName + "]";
+	}
 }
