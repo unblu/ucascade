@@ -14,14 +14,15 @@ public class GitlabMockUtil {
 	public static final String MR_EVENT_SOURCE_BRANCH = "some-feature";
 	public static final String MR_EVENT_TARGET_BRANCH = "release/6.x.x";
 	public static final String MR_EVENT_MERGE_COMMIT_SHA = "e819d39ed37c6d4b8e700b9e7f34c74c099c163b";
-	public static final String MR_EVENT_ACTION = "merge";
+	public static final String MR_EVENT_MERGE_ACTION = "merge";
+	public static final String MR_EVENT_CLOSE_ACTION = "close";
 
 	public static final String DEFAULT_TARGET_BRANCH = "main";
 
 	public static final String GITLAB_EVENT_UUID = "test-1234";
 
 	public static MergeRequestSimple createDefaultMREvent() {
-		return new MergeRequestSimple(PROJECT_ID, 100L, USER_ID, MR_EVENT_SOURCE_BRANCH, MR_EVENT_TARGET_BRANCH, "merged", MR_EVENT_MERGE_COMMIT_SHA, MR_EVENT_ACTION, GITLAB_EVENT_UUID);
+		return new MergeRequestSimple(PROJECT_ID, 100L, USER_ID, MR_EVENT_SOURCE_BRANCH, MR_EVENT_TARGET_BRANCH, "merged", MR_EVENT_MERGE_COMMIT_SHA, MR_EVENT_MERGE_ACTION, GITLAB_EVENT_UUID);
 	}
 
 	/**
