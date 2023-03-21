@@ -254,9 +254,8 @@
 <li><a href="#_high_level_workflow">High-level Workflow</a></li>
 <li><a href="#_technical_workflow_ucascade">Technical Workflow - ucascade</a>
 <ul class="sectlevel2">
-<li><a href="#_previous_auto_mr_merged">previous_auto_mr_merged</a></li>
-<li><a href="#_created_auto_mr">created_auto_mr</a></li>
-<li><a href="#_existing_branch_deleted">existing_branch_deleted</a></li>
+<li><a href="#_merge_request_events">Merge Request events</a></li>
+<li><a href="#_actions">Actions</a></li>
 </ul>
 </li>
 </ul>
@@ -308,8 +307,12 @@
 <p>When using the "blocking" or "replay" <a href="20_endpoints.html">endpoints</a>, the returned object contains some indications about the items created by the different actions.
 If one of those actions is failing, the error message will be displayed in the returned object with the <code>_error</code> suffix.</p>
 </div>
+<div class="sect2">
+<h3 id="_merge_request_events">Merge Request events</h3>
+<div class="sect3">
+<h4 id="_merge_event">Merge event</h4>
 <div class="paragraph">
-<p>For a given merge request event, 3 different independent actions can be made:</p>
+<p>For a given merge request <code>merge</code> event, 3 different independent actions can be made:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -336,40 +339,61 @@ If one of those actions is failing, the error message will be displayed in the r
 </div>
 </li>
 <li>
-<p><code>existing_branch_deleted</code>: if the merged-request event corresponds to the merge of an auto merge-request and the source branch is still present, it gets deleted.</p>
+<p><code>existing_branch_deleted</code>: if the merged-request event corresponds to the <strong>merge</strong> of an auto merge-request and the source branch is still present, it gets deleted.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
 <p>The failure of one of those action will not prevent the next to be executed.</p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_close_event">Close event</h4>
+<div class="paragraph">
+<p>For a given merge request <code>close</code> event, 2 different independent actions can be made:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>existing_branch_deleted</code>: if the merge-request event corresponds to the <strong>close</strong> of an auto merge-request, the source branch gets deleted</p>
+</li>
+<li>
+<p><code>previous_auto_mr_merged</code>: if some other auto-merge requests are open between the same two branches, then the oldest auto merge request is merged.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
 <div class="sect2">
-<h3 id="_previous_auto_mr_merged">previous_auto_mr_merged</h3>
+<h3 id="_actions">Actions</h3>
+<div class="sect3">
+<h4 id="_previous_auto_mr_merged">previous_auto_mr_merged</h4>
 <div class="paragraph">
 <p>When a lot of changes are made concurrently, it can be that multiple auto-merge requests are created between the same main branches (<code>main/1.2.x</code> and <code>main/1.3.x</code>).
 In such cases, only the first one is set up to be merged directly.
-This means that when the auto-merge request finally gets merged, any other pending auto-merge requests between the same branches must still be merged.
+This means that when the auto-merge request finally gets merged or closed, any other pending auto-merge requests between the same branches must still be merged.
 ucascade starts with the oldest one.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_created_auto_mr">created_auto_mr</h3>
+<div class="sect3">
+<h4 id="_created_auto_mr">created_auto_mr</h4>
 <div class="paragraph">
 <p>This explains how ucascade determines if a new auto-merge request is created or not:</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="../images/diag-9db092a1b2e50033add0b0b01d76d191.svg" alt="diag 9db092a1b2e50033add0b0b01d76d191" width="1182" height="1452">
+<img src="../images/diag-44b8d8756e4ad9d7d681609be314ae9a.svg" alt="diag 44b8d8756e4ad9d7d681609be314ae9a" width="1449" height="1529">
 </div>
 </div>
 <div class="paragraph">
 <p>During the final stage of the success case&#8201;&#8212;&#8201;merging the MR&#8201;&#8212;&#8201;<code>ucascade</code> verifies if that MR has any pipeline configured. If it has, the flag <code>merge_when_pipeline_succeeds</code> is set to <code>true</code>, meaning that the merge is only to happen after all its pipelines have finished successfully. Otherwise, if it doesn&#8217;t have any pipeline, this flag is set to <code>false</code>, preventing GitLab to return a 405 error (see <a href="https://gitlab.com/gitlab-org/gitlab/-/issues/355455">issue #355455</a> for more details).</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_existing_branch_deleted">existing_branch_deleted</h3>
+<div class="sect3">
+<h4 id="_existing_branch_deleted">existing_branch_deleted</h4>
 <div class="paragraph">
-<p>Sometime the source branch of an auto merge-request is not deleted by gitlab. Ucascade makes sure that this branch gets deleted once the corresponding merge request is merged.</p>
+<p>Whenever a user closes an auto merge-request, the source branch is not deleted automatically. Additionally, sometimes when a merge-request is merged, its source branch is not deleted by gitlab. Ucascade makes sure that in both of these situations, the source branch gets deleted.</p>
+</div>
 </div>
 </div>
 </div>
