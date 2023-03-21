@@ -130,7 +130,7 @@ class UcascadeTest {
 	}
 
 	@Test
-	void testSuccessCase() throws Exception {
+	void testSuccessCaseMergeEvent() throws Exception {
 		// corresponds to the merge event of MR !100 feature branch targeting branch 'release/6.x.x'
 		// input is using the replay endpoint
 		// expect to create an auto-merge request: !101
@@ -161,6 +161,40 @@ class UcascadeTest {
 				.body("existing_branch_deleted", nullValue());
 
 		verifyRequests(12);
+	}
+
+	@Test
+	void testSuccessCaseCloseEvent() throws Exception {
+		// corresponds to the close event of MR !100 automatically created branch targeting branch 'main'
+		// input is using the replay endpoint
+		// expect to delete the source branch of MR !100 and to merge existing MRs between the same source/target branches
+		Long mrNumber = 100L;
+		String branchToDelete = "mr99_release/6.x.x";
+
+		//		setupDefaultStubs();
+		setupDeleteBranchStubOk(GitlabMockUtil.PROJECT_ID, branchToDelete);
+		MergeRequestSimple mrSimple = new MergeRequestSimple(GitlabMockUtil.PROJECT_ID, mrNumber, GitlabMockUtil.USER_ID, branchToDelete, GitlabMockUtil.DEFAULT_TARGET_BRANCH, "closed", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, GitlabMockUtil.MR_EVENT_CLOSE_ACTION, GitlabMockUtil.GITLAB_EVENT_UUID);
+
+		Long existingOpenMrNr = 90L;
+		setupGetOpenMergeRequestStub(GitlabMockUtil.PROJECT_ID);
+		setupGetMRPipelinesRequestStub(GitlabMockUtil.PROJECT_ID, existingOpenMrNr, true);
+		setupAcceptMergeRequestStub(GitlabMockUtil.PROJECT_ID, existingOpenMrNr, Map.of("iid", "" + existingOpenMrNr), true, true);
+
+		given().when()
+				.header("Content-Type", "application/json")
+				.body(mrSimple)
+				.post("/ucascade/replay")
+				.then()
+				.statusCode(Response.Status.OK.getStatusCode())
+				.body(startsWith("{\n"))
+				.body(endsWith("\n}"))
+				.body("gitlab_event_uuid", equalTo(GitlabMockUtil.GITLAB_EVENT_UUID))
+				.body("previous_auto_mr_merged.mr_number", equalTo(existingOpenMrNr.intValue()))
+				.body("previous_auto_mr_merged.ucascade_state", equalTo(MergeRequestUcascadeState.MERGED.name()))
+				.body("created_auto_mr", nullValue())
+				.body("existing_branch_deleted.branch_name", equalTo(branchToDelete));
+
+		verifyRequests(4);
 	}
 
 	private void setupDefaultStubs() {
@@ -252,7 +286,7 @@ class UcascadeTest {
 		setupGetFileFromRepositoryRequestStub(projectId, "ucascade.json", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA);
 		setupCompareBranchesRequestStub(projectId, GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, nextMainBranch, true);
 
-		MergeRequestSimple mrSimple = new MergeRequestSimple(projectId, 100L, GitlabMockUtil.USER_ID, "mr99_release/5.x.x", "release/6.x.x", "merged", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, GitlabMockUtil.MR_EVENT_ACTION, "event-93484");
+		MergeRequestSimple mrSimple = new MergeRequestSimple(projectId, 100L, GitlabMockUtil.USER_ID, "mr99_release/5.x.x", "release/6.x.x", "merged", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, GitlabMockUtil.MR_EVENT_MERGE_ACTION, "event-93484");
 
 		given().when()
 				.header("Content-Type", "application/json")
@@ -424,7 +458,7 @@ class UcascadeTest {
 		setupGetFileFromRepositoryRequestStub(GitlabMockUtil.PROJECT_ID, "ucascade.json", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA);
 		setupGetEmptyOpenMergeRequestStub(GitlabMockUtil.PROJECT_ID);
 
-		MergeRequestSimple mrSimple = new MergeRequestSimple(GitlabMockUtil.PROJECT_ID, 102L, GitlabMockUtil.USER_ID, "mr99_release/6.x.x", "main", "merged", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, GitlabMockUtil.MR_EVENT_ACTION, GitlabMockUtil.GITLAB_EVENT_UUID);
+		MergeRequestSimple mrSimple = new MergeRequestSimple(GitlabMockUtil.PROJECT_ID, 102L, GitlabMockUtil.USER_ID, "mr99_release/6.x.x", "main", "merged", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, GitlabMockUtil.MR_EVENT_MERGE_ACTION, GitlabMockUtil.GITLAB_EVENT_UUID);
 
 		given().when()
 				.header("Content-Type", "application/json")
@@ -455,7 +489,7 @@ class UcascadeTest {
 		setupAcceptMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNr, Map.of("iid", "" + mrNr), true, true);
 		setupDeleteBranchStubNotFound(GitlabMockUtil.PROJECT_ID, "mr107_release/6.x.x");
 
-		MergeRequestSimple mrSimple = new MergeRequestSimple(GitlabMockUtil.PROJECT_ID, 110L, GitlabMockUtil.USER_ID, "mr107_release/6.x.x", "main", "merged", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, GitlabMockUtil.MR_EVENT_ACTION, "event7462");
+		MergeRequestSimple mrSimple = new MergeRequestSimple(GitlabMockUtil.PROJECT_ID, 110L, GitlabMockUtil.USER_ID, "mr107_release/6.x.x", "main", "merged", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, GitlabMockUtil.MR_EVENT_MERGE_ACTION, "event7462");
 
 		given().when()
 				.header("Content-Type", "application/json")
@@ -493,7 +527,7 @@ class UcascadeTest {
 		setupAcceptMergeRequestStub(GitlabMockUtil.PROJECT_ID, 101L, null, true, true);
 		setupDeleteBranchStubNotFound(GitlabMockUtil.PROJECT_ID, "mr107_release/6.x.x");
 
-		MergeRequestSimple mrSimple = new MergeRequestSimple(GitlabMockUtil.PROJECT_ID, 110L, GitlabMockUtil.USER_ID, "mr107_release/6.x.x", "main", "merged", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, GitlabMockUtil.MR_EVENT_ACTION, "event945837");
+		MergeRequestSimple mrSimple = new MergeRequestSimple(GitlabMockUtil.PROJECT_ID, 110L, GitlabMockUtil.USER_ID, "mr107_release/6.x.x", "main", "merged", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, GitlabMockUtil.MR_EVENT_MERGE_ACTION, "event945837");
 
 		given().when()
 				.header("Content-Type", "application/json")
@@ -528,7 +562,7 @@ class UcascadeTest {
 		setupGetOpenMergeRequestStub(GitlabMockUtil.PROJECT_ID, body);
 		setupDeleteBranchStubNotFound(GitlabMockUtil.PROJECT_ID, "mr107_release/6.x.x");
 
-		MergeRequestSimple mrSimple = new MergeRequestSimple(GitlabMockUtil.PROJECT_ID, 110L, GitlabMockUtil.USER_ID, "mr107_release/6.x.x", "main", "merged", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, GitlabMockUtil.MR_EVENT_ACTION, "event94857");
+		MergeRequestSimple mrSimple = new MergeRequestSimple(GitlabMockUtil.PROJECT_ID, 110L, GitlabMockUtil.USER_ID, "mr107_release/6.x.x", "main", "merged", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, GitlabMockUtil.MR_EVENT_MERGE_ACTION, "event94857");
 
 		given().when()
 				.header("Content-Type", "application/json")
@@ -555,7 +589,7 @@ class UcascadeTest {
 		setupGetBranchStubNotFound(GitlabMockUtil.PROJECT_ID, nextMainBranch);
 		setupGetFileFromRepositoryRequestStub(GitlabMockUtil.PROJECT_ID, "ucascade.json", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA);
 
-		MergeRequestSimple mrSimple = new MergeRequestSimple(GitlabMockUtil.PROJECT_ID, 90L, GitlabMockUtil.USER_ID, GitlabMockUtil.MR_EVENT_SOURCE_BRANCH, GitlabMockUtil.MR_EVENT_TARGET_BRANCH, "merged", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, GitlabMockUtil.MR_EVENT_ACTION, GitlabMockUtil.GITLAB_EVENT_UUID);
+		MergeRequestSimple mrSimple = new MergeRequestSimple(GitlabMockUtil.PROJECT_ID, 90L, GitlabMockUtil.USER_ID, GitlabMockUtil.MR_EVENT_SOURCE_BRANCH, GitlabMockUtil.MR_EVENT_TARGET_BRANCH, "merged", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, GitlabMockUtil.MR_EVENT_MERGE_ACTION, GitlabMockUtil.GITLAB_EVENT_UUID);
 
 		given().when()
 				.header("Content-Type", "application/json")

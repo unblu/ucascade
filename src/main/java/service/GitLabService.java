@@ -84,48 +84,15 @@ public class GitLabService {
 
 		CascadeResult result = createResult(gitlabEventUUID);
 
-		Long userId = mrEvent.getUserId();
-		Long projectId = mrEvent.getProjectId();
-		String sourceBranch = mrEvent.getSourceBranch();
-		String targetBranch = mrEvent.getTargetBranch();
-		Long mrNumber = mrEvent.getMrNumber();
-		String mergeSha = mrEvent.getMergeCommitSha();
 		String mrState = mrEvent.getMrState();
 		String mrAction = mrEvent.getMrAction();
 
 		if (mrState.equals("merged") && mrAction.equals("merge")) {
-			String prevSourceBranch = removeMrPrefixPattern(sourceBranch);
-
-			Log.infof("GitlabEvent: '%s' | Project: '%d', User: '%d', Target: '%s', MergeRequestNumber: '%d'",
-					gitlabEventUUID, projectId, userId, targetBranch, mrNumber);
-
-			try {
-				mergePreviousAutoMr(result, gitlabEventUUID, projectId, targetBranch, prevSourceBranch);
-			} catch (Exception e) {
-				Log.warnf(e, "GitlabEvent: '%s' | Exception while merging previous auto merge request. Project: '%d', Target: '%s', PrevSourceBranch: '%s'",
-						gitlabEventUUID, projectId, targetBranch, prevSourceBranch);
-				result.setPreviousAutoMrMergedError(e.getMessage());
-			}
-
-			try {
-				createAutoMr(result, gitlabEventUUID, projectId, sourceBranch, targetBranch, mrNumber, mergeSha);
-			} catch (Exception e) {
-				Log.warnf(e, "GitlabEvent: '%s' | Exception while creating auto merge request. Project: '%d', User: '%d', SourceBranch: '%s', TargetBranch: '%s', MergeRequestNumber: '%d', MergeSha: '%s'",
-						gitlabEventUUID, projectId, userId, sourceBranch, targetBranch, mrNumber, mergeSha);
-				result.setCreatedAutoMrError(e.getMessage());
-			}
-
-			try {
-				deleteExistingBranch(result, gitlabEventUUID, projectId, sourceBranch);
-			} catch (Exception e) {
-				Log.warnf(e, "GitlabEvent: '%s' | Exception while deleting existing branch. Project: '%d', SourceBranch: '%s'",
-						gitlabEventUUID, projectId, sourceBranch);
-				result.setExistingBranchDeleteError(e.getMessage());
-			}
-
+			handleMrMergeEvent(mrEvent, gitlabEventUUID, result);
+		} else if (mrState.equals("closed") && mrAction.equals("close")) {
+			handleMrCloseEvent(mrEvent, gitlabEventUUID, result);
 		} else {
-			Log.infof("GitlabEvent: '%s' | Skip event for Project: '%d', User: '%d', Target: '%s', MergeRequestNumber: '%d', State: '%s', Action: '%s'",
-					gitlabEventUUID, projectId, userId, targetBranch, mrNumber, mrState, mrAction);
+			handleSkipEvent(mrEvent, gitlabEventUUID, mrState, mrAction);
 		}
 
 		Log.infof("GitlabEvent: '%s' | Finished handling event with result %s",
@@ -139,6 +106,76 @@ public class GitLabService {
 		result.setBuildCommit(buildCommit);
 		result.setBuildTimestamp(buildTimestamp);
 		return result;
+	}
+
+	private void handleMrMergeEvent(MergeRequestSimple mrEvent, String gitlabEventUUID, CascadeResult result) {
+		Long userId = mrEvent.getUserId();
+		Long projectId = mrEvent.getProjectId();
+		String sourceBranch = mrEvent.getSourceBranch();
+		String targetBranch = mrEvent.getTargetBranch();
+		Long mrNumber = mrEvent.getMrNumber();
+		String mergeSha = mrEvent.getMergeCommitSha();
+		String prevSourceBranch = removeMrPrefixPattern(sourceBranch);
+
+		Log.infof("GitlabEvent: '%s' | Merge MR Event. Project: '%d', User: '%d', Target: '%s', MergeRequestNumber: '%d'",
+				gitlabEventUUID, projectId, userId, targetBranch, mrNumber);
+
+		try {
+			mergePreviousAutoMr(result, gitlabEventUUID, projectId, targetBranch, prevSourceBranch);
+		} catch (Exception e) {
+			Log.warnf(e, "GitlabEvent: '%s' | Exception while merging previous auto merge request. Project: '%d', Target: '%s', PrevSourceBranch: '%s'",
+					gitlabEventUUID, projectId, targetBranch, prevSourceBranch);
+			result.setPreviousAutoMrMergedError(e.getMessage());
+		}
+
+		try {
+			createAutoMr(result, gitlabEventUUID, projectId, sourceBranch, targetBranch, mrNumber, mergeSha);
+		} catch (Exception e) {
+			Log.warnf(e, "GitlabEvent: '%s' | Exception while creating auto merge request. Project: '%d', User: '%d', SourceBranch: '%s', TargetBranch: '%s', MergeRequestNumber: '%d', MergeSha: '%s'",
+					gitlabEventUUID, projectId, userId, sourceBranch, targetBranch, mrNumber, mergeSha);
+			result.setCreatedAutoMrError(e.getMessage());
+		}
+
+		try {
+			deleteExistingBranch(result, gitlabEventUUID, projectId, sourceBranch);
+		} catch (Exception e) {
+			Log.warnf(e, "GitlabEvent: '%s' | Exception while deleting existing branch. Project: '%d', SourceBranch: '%s'",
+					gitlabEventUUID, projectId, sourceBranch);
+			result.setExistingBranchDeleteError(e.getMessage());
+		}
+	}
+
+	private void handleMrCloseEvent(MergeRequestSimple mrEvent, String gitlabEventUUID, CascadeResult result) {
+		Long userId = mrEvent.getUserId();
+		Long projectId = mrEvent.getProjectId();
+		String sourceBranch = mrEvent.getSourceBranch();
+		String targetBranch = mrEvent.getTargetBranch();
+		Long mrNumber = mrEvent.getMrNumber();
+		String prevSourceBranch = removeMrPrefixPattern(sourceBranch);
+
+		Log.infof("GitlabEvent: '%s' | Close MR Event. Project: '%d', User: '%d', Target: '%s', MergeRequestNumber: '%d'",
+				gitlabEventUUID, projectId, userId, targetBranch, mrNumber);
+
+		try {
+			deleteExistingBranch(result, gitlabEventUUID, projectId, sourceBranch);
+		} catch (Exception e) {
+			Log.warnf(e, "GitlabEvent: '%s' | Exception while deleting existing branch. Project: '%d', SourceBranch: '%s'",
+					gitlabEventUUID, projectId, sourceBranch);
+			result.setExistingBranchDeleteError(e.getMessage());
+		}
+
+		try {
+			mergePreviousAutoMr(result, gitlabEventUUID, projectId, targetBranch, prevSourceBranch);
+		} catch (Exception e) {
+			Log.warnf(e, "GitlabEvent: '%s' | Exception while merging previous auto merge request. Project: '%d', Target: '%s', PrevSourceBranch: '%s'",
+					gitlabEventUUID, projectId, targetBranch, prevSourceBranch);
+			result.setPreviousAutoMrMergedError(e.getMessage());
+		}
+	}
+
+	private void handleSkipEvent(MergeRequestSimple mrEvent, String gitlabEventUUID, String mrState, String mrAction) {
+		Log.infof("GitlabEvent: '%s' | Skip event for Project: '%d', User: '%d', Target: '%s', MergeRequestNumber: '%d', State: '%s', Action: '%s'",
+				gitlabEventUUID, mrEvent.getProjectId(), mrEvent.getUserId(), mrEvent.getTargetBranch(), mrEvent.getMrNumber(), mrState, mrAction);
 	}
 
 	private void mergePreviousAutoMr(CascadeResult result, String gitlabEventUUID, Long projectId, String sourceBranch, String prevSourceBranch) {
