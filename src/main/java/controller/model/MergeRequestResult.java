@@ -205,4 +205,9 @@ public class MergeRequestResult {
 				ucascadeState == other.ucascadeState &&
 				Objects.equals(webUrl, other.webUrl);
 	}
+
+	@Override
+	public String toString() {
+		return "MergeRequestResult [id=" + id + ", projectId=" + projectId + ", iid=" + iid + ", assigneeId=" + assigneeId + ", title=" + title + ", description=" + description + ", state=" + state + ", mergeStatus=" + mergeStatus + ", hasConflicts=" + hasConflicts + ", sourceBranch=" + sourceBranch + ", targetBranch=" + targetBranch + ", webUrl=" + webUrl + ", ucascadeState=" + ucascadeState + "]";
+	}
 }
