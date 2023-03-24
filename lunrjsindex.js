@@ -10,18 +10,18 @@ var documents = [
 
 {
     "id": 1,
-    "uri": "tech-docs/11_ucascade-configuration-file.html",
-    "menu": "tech-docs",
-    "title": "Configuration File",
-    "text": " Table of Contents Configuration file Configuration file The branches of interest, and the direction and order of the consecutive automatic merges, is configured in the JSON file ucascade.json . This file must be present in the root directory of the repository. Example: { branches : [ { sourceBranchPattern : main/1\\.2\\.x, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x, targetBranch : main/2.0.x }, { sourceBranchPattern : main/2\\.0\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/2.0.x } ] } "
-},
-
-{
-    "id": 2,
     "uri": "tech-docs/10_setup.html",
     "menu": "tech-docs",
     "title": "Setup",
     "text": " Table of Contents Setup GitLab: Generate an API Token Application Setup GitLab: Webhook Setup Branches: Merge Model Dev setup Working with a remote GitLab instance Setup In order to interact with a given Gitlab instance through its REST API, ucascade needs to be authorized and authenticated. To do so, together with Gitlab&#8217;s instance URL, an API token must be provided. In case merge-requests require one approval to be merged, an additional API token must be provided. If the merge-request author is allowed to approve its own merge-requests, both API tokens can be identical. GitLab: Generate an API Token You will need a personal access token or a group access in order for the tool to interact with your repositories on GitLab. In addition, depending on the project&#8217;s configuration, you might need an extra API token, which can be obtained in the same way as the first one. All the actions are done using the REST API of GitLab. You will need the api scope. Application Setup Some configurations are available for ucascade: Example application.properties file gitlab.host=https://gitlab.com gitlab.api.token=glpat-rXzx1n17cqUnmo437XSf gitlab.api.token.approver=glpat-fGzx1n17cqUnmo437GGs You can use any of the Configuration Sources supported by Quarkus to set the values. For example you can use following system property to set the gitlab.api.token value: Setting gitlab.api.token using a system property: export GITLAB_API_TOKEN=glpat-rXzx1n17cqUnmo437XSf GitLab host Specify the location of the GitLab server: key: gitlab.host default value https://gitlab.com GitLab api token Specify the api token value used when ucascade is performing REST calls. key: gitlab.api.token No default value. Mandatory for the application to start GitLab api token approver Specify the api token value used when ucascade is approving a merge-request through a REST call. key: gitlab.api.token.approver No default value. If not set, ucascade will merge the merge-requests without approving them first. If set, ucascade will approve the merge-request using that value. GitLab: Webhook Setup In the corresponding repository or group configure a Webhook pointing to the location where ucascade is available: URL: &lt;server url&gt;/ucascade/merge-request Trigger: Merge request events Warning From an operational point of view, it might be safer to deploy ucascade to a server where only your GitLab instance has access. Branches: Merge Model As explained in the configuration file section , in order to configure how the automatic merges are performed, a JSON file named ucascade.json must be present at the root of the project. Dev setup The application can be started locally, check local build section. Working with a remote GitLab instance If you are working locally with a remote gitlab instance (like https://gitlab.com/ ), adding some proxy might be useful: With a tool like ngrok you will get a public url (something like https://2a01-8943-19d-e0a-8b20-645f-f7a2-c2d-9be1.ngrok.io ) that points to your localhost computer. start ngrok (assuming ucascade is running locally on port 8080) ngrok http 8080 With a tool like mitmproxy you can proxy the remote instance to capture the REST requests made by ucascade to the remote instance: start mitmproxy mitmproxy -p 8888 --mode reverse:https://gitlab.com And then make ucascade use localhost:8888 instead of gitlab.com directly: use mitmproxy export GITLAB_HOST=http://localhost:8888 "
+},
+
+{
+    "id": 2,
+    "uri": "tech-docs/11_ucascade-configuration-file.html",
+    "menu": "tech-docs",
+    "title": "Configuration File",
+    "text": " Table of Contents Configuration file Configuration file The branches of interest, and the direction and order of the consecutive automatic merges, is configured in the JSON file ucascade.json . This file must be present in the root directory of the repository. Example: { branches : [ { sourceBranchPattern : main/1\\.2\\.x, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x, targetBranch : main/2.0.x }, { sourceBranchPattern : main/2\\.0\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/2.0.x } ] } "
 },
 
 {
