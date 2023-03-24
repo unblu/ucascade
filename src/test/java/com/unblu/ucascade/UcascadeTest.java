@@ -11,6 +11,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 
@@ -790,6 +791,40 @@ class UcascadeTest {
 				.body("build_commit", equalTo("6af21ad"))
 				.body("build_timestamp", equalTo("2022-01-01T07:21:58.378413Z"))
 				.body("error", equalTo("Invalid path: /foo"));
+
+		verifyRequests(0);
+	}
+
+	@Test
+	void testHealthLive() throws Exception {
+		//make sure we get an answer from the 'quarkus-smallrye-health' module
+		given().when()
+				.get("/q/health/live")
+				.then()
+				.statusCode(Response.Status.OK.getStatusCode())
+				.body("status", notNullValue())
+				.body("checks", notNullValue())
+				.body("gitlab_event_uuid", nullValue())
+				.body("build_commit", nullValue())
+				.body("build_timestamp", nullValue())
+				.body("error", nullValue());
+
+		verifyRequests(0);
+	}
+
+	@Test
+	void testHealthReady() throws Exception {
+		//make sure we get an answer from the 'quarkus-smallrye-health' module
+		given().when()
+				.post("/q/health/ready")
+				.then()
+				.statusCode(Response.Status.OK.getStatusCode())
+				.body("status", notNullValue())
+				.body("checks", notNullValue())
+				.body("gitlab_event_uuid", nullValue())
+				.body("build_commit", nullValue())
+				.body("build_timestamp", nullValue())
+				.body("error", nullValue());
 
 		verifyRequests(0);
 	}

@@ -16,6 +16,7 @@ import io.quarkus.vertx.web.Route.HandlerType;
 import io.quarkus.vertx.web.Route.HttpMethod;
 import io.quarkus.vertx.web.RouteBase;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.mutiny.core.eventbus.EventBus;
 import service.GitLabService;
@@ -58,14 +59,21 @@ public class MergeRequestController {
 	}
 
 	@Route(path = "/*", order = 2)
-	public CascadeResult other(@Header("X-Gitlab-Event-UUID") String gitlabEventUUID, RoutingContext rc) {
+	public void other(@Header("X-Gitlab-Event-UUID") String gitlabEventUUID, RoutingContext rc) {
 		String path = rc.request().path();
-		Log.infof("GitlabEvent: '%s' | Invalid path '%s' ", gitlabEventUUID, path);
+		if (path.equals("/q/health/live") || path.equals("/q/health/ready")) {
+			// the module 'quarkus-smallrye-health' will answer:
+			rc.next();
+		} else {
+			Log.infof("GitlabEvent: '%s' | Invalid path '%s' ", gitlabEventUUID, path);
 
-		CascadeResult result = gitLabService.createResult(gitlabEventUUID);
-		result.setError("Invalid path: " + path);
-		rc.response().setStatusCode(202);
-		return result;
+			CascadeResult result = gitLabService.createResult(gitlabEventUUID);
+			result.setError("Invalid path: " + path);
+			String body = Json.encode(result);
+			rc.response()
+					.setStatusCode(202)
+					.end(body);
+		}
 	}
 
 	@Route(path = "/*", order = 3, type = HandlerType.FAILURE)
