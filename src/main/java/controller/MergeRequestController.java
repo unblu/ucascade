@@ -61,7 +61,7 @@ public class MergeRequestController {
 	@Route(path = "/*", order = 2)
 	public void other(@Header("X-Gitlab-Event-UUID") String gitlabEventUUID, RoutingContext rc) {
 		String path = rc.request().path();
-		if (path.equals("/q/health/live") || path.equals("/q/health/ready")) {
+		if (path.startsWith("/q/health")) {
 			// the module 'quarkus-smallrye-health' will answer:
 			rc.next();
 		} else {
