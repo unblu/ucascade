@@ -19,7 +19,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-smallrye-health'
     implementation 'io.quarkus:quarkus-container-image-jib'
     implementation 'io.quarkus:quarkus-arc'
-    implementation 'org.gitlab4j:gitlab4j-api:5.0.1'
+    implementation 'org.gitlab4j:gitlab4j-api:5.1.0'
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.33.2'

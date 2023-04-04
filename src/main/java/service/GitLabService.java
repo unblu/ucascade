@@ -487,7 +487,7 @@ public class GitLabService {
 		Log.infof("GitlabEvent: '%s' | Backtracing cascade responsible: get merge request '!%d' in project '%d'", gitlabEventUUID, mrNumber, project);
 		MergeRequest mr = getMr(gitlabEventUUID, project, mrNumber);
 		if (mr != null) {
-			Long mrMerger = mr.getMergedBy().getId();
+			Long mrMerger = mr.getMergeUser().getId();
 			Log.infof("GitlabEvent: '%s' | MR merger has id '%d', ucascade user has id '%d'", gitlabEventUUID, mrMerger, ucascadeUser);
 
 			if (Objects.equals(mrMerger, ucascadeUser)) {
