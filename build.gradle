@@ -19,6 +19,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-smallrye-health'
     implementation 'io.quarkus:quarkus-container-image-jib'
     implementation 'io.quarkus:quarkus-arc'
+    implementation 'eu.mulk.quarkus-googlecloud-jsonlogging:quarkus-googlecloud-jsonlogging:6.0.0'
     implementation 'org.gitlab4j:gitlab4j-api:5.0.1'
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
@@ -71,6 +72,9 @@ build.timestamp=${java.time.Instant.now().toString()}
 
 quarkus.index-dependency.gitlab4j.group-id=org.gitlab4j
 quarkus.index-dependency.gitlab4j.artifact-id=gitlab4j-api
+
+%dev.quarkus.log.console.google=false
+%test.quarkus.log.console.google=false
 """
     }
 }
