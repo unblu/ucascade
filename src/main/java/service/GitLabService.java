@@ -333,11 +333,11 @@ public class GitLabService {
 
 		// wait for MR to leave the checking stage
 		mr = waitForMrToLeaveCheckingStage(gitlabEventUUID, mr, mrNumber, project);
-		String mergeStatus = mr.getMergeStatus();
+		String mergeStatus = mr.getDetailedMergeStatus();
 
 		MergeRequestApi mrApi = gitlab.getMergeRequestApi();
 		MergeRequestUcascadeState state = MergeRequestUcascadeState.NOT_MERGED_UNKNOWN_REASON;
-		if (mergeStatus.equals("can_be_merged")) {
+		if (mergeStatus.matches("mergeable|ci_still_running|ci_must_pass")) {
 			// Prepare merge:
 			String sourceBranch = mr.getSourceBranch();
 			String sourceBranchPretty = removeMrPrefixPattern(sourceBranch);
@@ -369,7 +369,7 @@ public class GitLabService {
 			}
 		} else {
 			// if possible, assign merge responsibility to a real user
-			Log.infof("GitlabEvent: '%s' | Automatic merge failed. Finding cascade responsible for MR '!%d'", gitlabEventUUID, mrNumber);
+			Log.infof("GitlabEvent: '%s' | Automatic merge failed - status: '%s'. Finding cascade responsible for MR '!%d'", gitlabEventUUID, mergeStatus, mrNumber);
 			Long cascadeResponsibleId = getCascadeResponsible(gitlabEventUUID, project, getPrevMergeRequestNumber(mr.getSourceBranch()));
 			if (cascadeResponsibleId != null) {
 				Log.infof("GitlabEvent: '%s' | Assigning MR '!%d' to cascade responsible with id '%d'", gitlabEventUUID, mrNumber, cascadeResponsibleId);
@@ -402,8 +402,8 @@ public class GitLabService {
 
 	private MergeRequest waitForMrToLeaveCheckingStage(String gitlabEventUUID, MergeRequest mr, Long mrNumber, Long project) {
 		int countDown = MAX_RETRY_ATTEMPTS;
-		String mrStatus = mr.getMergeStatus();
-		while (mrStatus.equals("checking") && countDown-- > 0) {
+		String mrStatus = mr.getDetailedMergeStatus();
+		while (mrStatus.matches("unchecked|checking") && countDown-- > 0) {
 			try {
 				TimeUnit.MILLISECONDS.sleep(100);
 			} catch (InterruptedException e) {
@@ -414,14 +414,14 @@ public class GitLabService {
 				// update local object
 				MergeRequestApi mrApi = gitlab.getMergeRequestApi();
 				mr = mrApi.getMergeRequest(project, mrNumber);
-				mrStatus = mr.getMergeStatus();
+				mrStatus = mr.getDetailedMergeStatus();
 			} catch (GitLabApiException e) {
 				throw new IllegalStateException(String.format("GitlabEvent: '%s' | Cannot retrieve MR '!%d'", gitlabEventUUID, mrNumber), e);
 			}
 		}
 
 		if (countDown < 0) {
-			throw new IllegalStateException(String.format("GitlabEvent: '%s' | Timeout: MR '!%d' is locked in the 'checking' status", gitlabEventUUID, mrNumber));
+			throw new IllegalStateException(String.format("GitlabEvent: '%s' | Timeout: MR '!%d' is locked in the '%s' status", gitlabEventUUID, mrNumber, mrStatus));
 		}
 		return mr;
 	}

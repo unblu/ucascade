@@ -19,7 +19,7 @@ if (incoming request?) then (yes)
                         Timeout to avoid the possibility
                         of getting stuck in the loop forever
                     end note
-                    while(MRStatus is "checking" and countdown > 0?) is (yes)
+                    while(MRStatus == unchecked|checking and countdown > 0?) is (yes)
                         #SkyBlue:decrement countDown by 1;
                         :sleep 100ms;
                         note right: Wait for Gitlab to prepare MR
@@ -28,7 +28,7 @@ if (incoming request?) then (yes)
                     if (countDown == 0) then (yes) 
                         :error;
                     else (no)
-                        switch(Is MRStatus == can_be_merged?)
+                        switch(Is MRStatus == mergeable|ci_still_running|ci_must_pass?)
                         case (yes)
                             if (MR has pipeline(s)?) then (yes)
                                 :merge when pipeline succeeds;

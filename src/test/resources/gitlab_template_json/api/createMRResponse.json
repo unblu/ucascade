@@ -36,6 +36,7 @@
   "milestone" : null,
   "merge_when_pipeline_succeeds" : false,
   "merge_status" : "checking",
+  "detailed_merge_status" : "checking",
   "sha" : "283b6c01ceed8aa6249e727ebbd333f92dae1d43",
   "merge_commit_sha" : null,
   "squash_commit_sha" : null,

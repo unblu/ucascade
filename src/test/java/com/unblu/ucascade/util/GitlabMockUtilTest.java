@@ -19,12 +19,12 @@ class GitlabMockUtilTest {
 	@Test
 	void gitLabMockUtilTest() {
 		Map<String, Object> customProperties = Map.of(
-				"merge_status", "\"cannot_be_merged\"",
+				"detailed_merge_status", "\"broken_status\"",
 				"project_id", 1234);
 		String body = GitlabMockUtil.get(GitlabAction.CREATE_MR, customProperties);
 
-		assertTrue(body.contains("\"merge_status\" : \"cannot_be_merged\","));
-		assertFalse(body.contains("\"merge_status\" : \"can_be_merged\","));
+		assertTrue(body.contains("\"detailed_merge_status\" : \"broken_status\","));
+		assertFalse(body.contains("\"detailed_merge_status\" : \"mergeable\","));
 		assertTrue(body.contains("\"project_id\" : 1234,"));
 		assertFalse(body.contains("\"project_id\" : 1,"));
 	}

@@ -118,7 +118,7 @@ class JsonUtilsTest {
 		previousAutoMrMerged.setTitle("[ucascade] Auto MR: 'main/1.2.x' -> 'main/1.3.x' (!29)");
 		previousAutoMrMerged.setDescription("Automatic cascade merge request: `test` !29 --> `main/1.2.x` --> `main/1.3.x`");
 		previousAutoMrMerged.setState("opened");
-		previousAutoMrMerged.setMergeStatus("can_be_merged");
+		previousAutoMrMerged.setDetailedMergeStatus("mergeable");
 		previousAutoMrMerged.setHasConflicts(false);
 		previousAutoMrMerged.setSourceBranch("mr29_main/1.2.x");
 		previousAutoMrMerged.setTargetBranch("main/1.3.x");
@@ -133,7 +133,7 @@ class JsonUtilsTest {
 		createdAutoMr.setTitle("[ucascade] Auto MR: 'main/1.3.x' -> 'develop' (!25)");
 		createdAutoMr.setDescription("Automatic cascade merge request: `test` !24 --> `main/1.2.x` !25 --> `main/1.3.x` --> develop");
 		createdAutoMr.setState("opened");
-		createdAutoMr.setMergeStatus("cannot_be_merged");
+		createdAutoMr.setDetailedMergeStatus("broken_status");
 		createdAutoMr.setHasConflicts(true);
 		createdAutoMr.setSourceBranch("mr25_main/1.3.x");
 		createdAutoMr.setTargetBranch("main");
