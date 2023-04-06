@@ -228,9 +228,9 @@ public class ResetTestExampleFilesMain {
 		do {
 			Thread.sleep(1000L);
 			mergeRequest = gitLabApi.getMergeRequestApi().getMergeRequest(project, mrIid);
-		} while (mergeRequest.getMergeStatus().equals("checking") && countDown-- > 0);
-		if (!mergeRequest.getMergeStatus().equals("can_be_merged")) {
-			throw new IllegalStateException("Wrong merge_status for MR: " + mergeRequest);
+		} while (mergeRequest.getDetailedMergeStatus().equals("checking") && countDown-- > 0);
+		if (!mergeRequest.getDetailedMergeStatus().equals("mergeable")) {
+			throw new IllegalStateException("Wrong detailed_merge_status for MR: " + mergeRequest);
 		}
 	}
 

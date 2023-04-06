@@ -205,7 +205,7 @@ class UcascadeTest {
 		setupCreateBranchStub(GitlabMockUtil.PROJECT_ID, "mr100_release/6.x.x", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, null);
 		setupGetBranchStub(GitlabMockUtil.PROJECT_ID, nextMainBranch, null);
 		setupGetEmptyOpenMergeRequestStub(GitlabMockUtil.PROJECT_ID);
-		Map<String, Object> customProperties = Map.of("merge_status", "\"checking\"");
+		Map<String, Object> customProperties = Map.of("detailed_merge_status", "\"checking\"");
 		setupCreateMergeRequestStub(GitlabMockUtil.PROJECT_ID, customProperties);
 		setupAcceptMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, null, true, true);
 		setupApproveMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, null);
@@ -229,7 +229,7 @@ class UcascadeTest {
 		setupCreateBranchStub(GitlabMockUtil.PROJECT_ID, "mr100_release/6.x.x", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, null);
 		setupGetBranchStub(GitlabMockUtil.PROJECT_ID, nextMainBranch, null);
 		setupGetEmptyOpenMergeRequestStub(GitlabMockUtil.PROJECT_ID);
-		Map<String, Object> customProperties = Map.of("merge_status", "\"checking\"");
+		Map<String, Object> customProperties = Map.of("detailed_merge_status", "\"checking\"");
 		setupCreateMergeRequestStub(GitlabMockUtil.PROJECT_ID, customProperties);
 		setupAcceptMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, null, false, true);
 		setupApproveMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, null);
@@ -276,7 +276,7 @@ class UcascadeTest {
 		setupGetEmptyOpenMergeRequestStub(projectId);
 		setupDeleteBranchStubNotFound(projectId, "mr99_release/5.x.x");
 		Map<String, Object> projectIdProperties = Map.of("project_id", "" + projectId);
-		Map<String, Object> customProperties = Map.of("merge_status", "\"checking\"", "project_id", "" + projectId);
+		Map<String, Object> customProperties = Map.of("detailed_merge_status", "\"checking\"", "project_id", "" + projectId);
 		setupCreateMergeRequestStub(projectId, customProperties);
 		setupAcceptMergeRequestStub(projectId, mrNumber, projectIdProperties, true, true);
 		setupApproveMergeRequestStub(projectId, mrNumber, projectIdProperties);
@@ -322,7 +322,7 @@ class UcascadeTest {
 		setupCreateBranchStub(GitlabMockUtil.PROJECT_ID, "mr100_release/6.x.x", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, null);
 		setupGetBranchStub(GitlabMockUtil.PROJECT_ID, nextMainBranch, null);
 		setupGetOpenMergeRequestStub(GitlabMockUtil.PROJECT_ID);
-		Map<String, Object> customProperties = Map.of("merge_status", "\"checking\"");
+		Map<String, Object> customProperties = Map.of("detailed_merge_status", "\"checking\"");
 		setupCreateMergeRequestStub(GitlabMockUtil.PROJECT_ID, customProperties);
 		setupApproveMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, null);
 		customProperties = Map.of("source_branch", "\"something\"");
@@ -346,7 +346,7 @@ class UcascadeTest {
 				.body("created_auto_mr.mr_number", equalTo(mrNumber.intValue()))
 				.body("created_auto_mr.source_branch", equalTo("mr100_release/6.x.x"))
 				.body("created_auto_mr.target_branch", equalTo(nextMainBranch))
-				.body("created_auto_mr.merge_status", equalTo("checking"))
+				.body("created_auto_mr.detailed_merge_status", equalTo("checking"))
 				.body("created_auto_mr.ucascade_state", equalTo(MergeRequestUcascadeState.NOT_MERGED_CONCURRENT_MRS.name()))
 				.body("existing_branch_deleted", nullValue());
 
@@ -364,12 +364,12 @@ class UcascadeTest {
 		setupCreateBranchStub(GitlabMockUtil.PROJECT_ID, "mr100_release/6.x.x", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, null);
 		setupGetBranchStub(GitlabMockUtil.PROJECT_ID, nextMainBranch, null);
 		setupGetEmptyOpenMergeRequestStub(GitlabMockUtil.PROJECT_ID);
-		Map<String, Object> customProperties = Map.of("merge_status", "\"checking\"");
+		Map<String, Object> customProperties = Map.of("detailed_merge_status", "\"checking\"");
 		setupCreateMergeRequestStub(GitlabMockUtil.PROJECT_ID, customProperties);
 		setupApproveMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, null);
 		Map<String, Object> mrCustomProperties = Map.of(
 				"title", "\"[ucascade] Auto MR: release/6.x.x -> main (!100)\"",
-				"merge_status", "\"cannot_be_merged\"",
+				"detailed_merge_status", "\"broken_status\"",
 				"has_conflicts", true);
 		setupGetMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, mrCustomProperties);
 		mrCustomProperties = Map.of(
@@ -392,7 +392,7 @@ class UcascadeTest {
 				.body(endsWith("\n}"))
 				.body("gitlab_event_uuid", equalTo(GitlabMockUtil.GITLAB_EVENT_UUID))
 				.body("previous_auto_mr_merged", nullValue())
-				.body("created_auto_mr.merge_status", equalTo("cannot_be_merged"))
+				.body("created_auto_mr.detailed_merge_status", equalTo("broken_status"))
 				.body("created_auto_mr.has_conflicts", equalTo(true))
 				.body("created_auto_mr.ucascade_state", equalTo(MergeRequestUcascadeState.NOT_MERGED_CONFLICTS.name()))
 				.body("created_auto_mr.assignee_id", equalTo(987)) // the merge_user of the previous MR
@@ -412,18 +412,18 @@ class UcascadeTest {
 		setupCreateBranchStub(GitlabMockUtil.PROJECT_ID, "mr100_release/6.x.x", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, null);
 		setupGetBranchStub(GitlabMockUtil.PROJECT_ID, nextMainBranch, null);
 		setupGetEmptyOpenMergeRequestStub(GitlabMockUtil.PROJECT_ID);
-		Map<String, Object> customProperties = Map.of("merge_status", "\"checking\"");
+		Map<String, Object> customProperties = Map.of("detailed_merge_status", "\"checking\"");
 		setupCreateMergeRequestStub(GitlabMockUtil.PROJECT_ID, customProperties);
 		setupApproveMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, null);
 		Map<String, Object> mrCustomProperties = Map.of(
 				"title", "\"[ucascade] Auto MR: release/6.x.x -> main (!100)\"",
-				"merge_status", "\"cannot_be_merged_recheck\"");
+				"detailed_merge_status", "\"policies_denied\"");
 		setupGetMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, mrCustomProperties);
 		mrCustomProperties = Map.of(
 				"iid", "100");
 		setupGetMergeRequestStub(GitlabMockUtil.PROJECT_ID, 100L, mrCustomProperties);
 		mrCustomProperties = Map.of(
-				"merge_status", "\"cannot_be_merged_recheck\"",
+				"detailed_merge_status", "\"policies_denied\"",
 				"has_conflicts", "false");
 		setupUpdateMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, mrCustomProperties);
 		setupGetFileFromRepositoryRequestStub(GitlabMockUtil.PROJECT_ID, "ucascade.json", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA);
@@ -441,7 +441,7 @@ class UcascadeTest {
 				.body(endsWith("\n}"))
 				.body("gitlab_event_uuid", equalTo(GitlabMockUtil.GITLAB_EVENT_UUID))
 				.body("previous_auto_mr_merged", nullValue())
-				.body("created_auto_mr.merge_status", equalTo("cannot_be_merged_recheck"))
+				.body("created_auto_mr.detailed_merge_status", equalTo("policies_denied"))
 				.body("created_auto_mr.has_conflicts", equalTo(false))
 				.body("created_auto_mr.ucascade_state", equalTo(MergeRequestUcascadeState.NOT_MERGED_UNKNOWN_REASON.name()))
 				.body("created_auto_mr.assignee_id", equalTo(987)) // the merge_user of the previous MR
@@ -617,7 +617,7 @@ class UcascadeTest {
 		setupCreateBranchStub(GitlabMockUtil.PROJECT_ID, sourceBranch, GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, null);
 		setupGetBranchStub(GitlabMockUtil.PROJECT_ID, nextMainBranch, null);
 		setupGetEmptyOpenMergeRequestStub(GitlabMockUtil.PROJECT_ID);
-		Map<String, Object> customProperties = Map.of("merge_status", "\"checking\"");
+		Map<String, Object> customProperties = Map.of("detailed_merge_status", "\"checking\"");
 		setupCreateMergeRequestStub(GitlabMockUtil.PROJECT_ID, customProperties);
 		setupAcceptMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, null, true, false);
 		Map<String, Object> approvalsCustomProperties = Map.of(
@@ -1050,7 +1050,7 @@ class UcascadeTest {
 		mr.setSourceBranch(sourceBranch);
 		mr.setTargetBranch(targetBranch);
 		mr.setMergeWhenPipelineSucceeds(mergeWhenPipelineSucceeds);
-		mr.setMergeStatus("can_be_merged");
+		mr.setDetailedMergeStatus("mergeable");
 		return mr;
 	}
 

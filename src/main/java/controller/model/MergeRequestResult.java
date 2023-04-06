@@ -37,8 +37,8 @@ public class MergeRequestResult {
 	@JsonProperty("state")
 	private String state;
 
-	@JsonProperty("merge_status")
-	private String mergeStatus;
+	@JsonProperty("detailed_merge_status")
+	private String detailedMergeStatus;
 
 	@JsonProperty("has_conflicts")
 	private Boolean hasConflicts;
@@ -62,7 +62,7 @@ public class MergeRequestResult {
 		title = mr.getTitle();
 		description = mr.getDescription();
 		state = mr.getState();
-		mergeStatus = mr.getMergeStatus();
+		detailedMergeStatus = mr.getDetailedMergeStatus();
 		hasConflicts = mr.getHasConflicts();
 		sourceBranch = mr.getSourceBranch();
 		targetBranch = mr.getTargetBranch();
@@ -129,12 +129,12 @@ public class MergeRequestResult {
 		this.state = state;
 	}
 
-	public String getMergeStatus() {
-		return mergeStatus;
+	public String getDetailedMergeStatus() {
+		return detailedMergeStatus;
 	}
 
-	public void setMergeStatus(String mergeStatus) {
-		this.mergeStatus = mergeStatus;
+	public void setDetailedMergeStatus(String detailedMergeStatus) {
+		this.detailedMergeStatus = detailedMergeStatus;
 	}
 
 	public Boolean getHasConflicts() {
@@ -179,7 +179,7 @@ public class MergeRequestResult {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(assigneeId, description, hasConflicts, id, iid, mergeStatus, projectId, sourceBranch, state, targetBranch, title, ucascadeState, webUrl);
+		return Objects.hash(assigneeId, description, hasConflicts, id, iid, detailedMergeStatus, projectId, sourceBranch, state, targetBranch, title, ucascadeState, webUrl);
 	}
 
 	@Override
@@ -196,7 +196,7 @@ public class MergeRequestResult {
 				Objects.equals(hasConflicts, other.hasConflicts) &&
 				Objects.equals(id, other.id) &&
 				Objects.equals(iid, other.iid) &&
-				Objects.equals(mergeStatus, other.mergeStatus) &&
+				Objects.equals(detailedMergeStatus, other.detailedMergeStatus) &&
 				Objects.equals(projectId, other.projectId) &&
 				Objects.equals(sourceBranch, other.sourceBranch) &&
 				Objects.equals(state, other.state) &&
@@ -208,6 +208,6 @@ public class MergeRequestResult {
 
 	@Override
 	public String toString() {
-		return "MergeRequestResult [id=" + id + ", projectId=" + projectId + ", iid=" + iid + ", assigneeId=" + assigneeId + ", title=" + title + ", description=" + description + ", state=" + state + ", mergeStatus=" + mergeStatus + ", hasConflicts=" + hasConflicts + ", sourceBranch=" + sourceBranch + ", targetBranch=" + targetBranch + ", webUrl=" + webUrl + ", ucascadeState=" + ucascadeState + "]";
+		return "MergeRequestResult [id=" + id + ", projectId=" + projectId + ", iid=" + iid + ", assigneeId=" + assigneeId + ", title=" + title + ", description=" + description + ", state=" + state + ", mergeStatus=" + detailedMergeStatus + ", hasConflicts=" + hasConflicts + ", sourceBranch=" + sourceBranch + ", targetBranch=" + targetBranch + ", webUrl=" + webUrl + ", ucascadeState=" + ucascadeState + "]";
 	}
 }

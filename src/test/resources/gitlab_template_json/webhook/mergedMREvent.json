@@ -42,6 +42,7 @@
       "force_remove_source_branch" : true
     },
     "merge_status" : "can_be_merged",
+    "detailed_merge_status" : "mergeable",
     "merge_user_id" : null,
     "merge_when_pipeline_succeeds" : false,
     "milestone_id" : null,

@@ -8,6 +8,7 @@
   "created_at": "2016-06-08T00:19:52.638Z",
   "updated_at": "2016-06-09T21:32:14.105Z",
   "merge_status": "can_be_merged",
+  "detailed_merge_status": "mergeable",
   "approvals_required": 1,
   "approvals_left": 0,
   "approved_by": [

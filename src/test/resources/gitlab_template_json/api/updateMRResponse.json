@@ -43,6 +43,7 @@
   "milestone" : null,
   "merge_when_pipeline_succeeds" : false,
   "merge_status" : "cannot_be_merged",
+  "detailed_merge_status" : "broken_status",
   "sha" : "283b6c01ceed8aa6249e727ebbd333f92dae1d43",
   "merge_commit_sha" : null,
   "squash_commit_sha" : null,
