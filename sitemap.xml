@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
     <url>
-    	<loc>http://jbake.org/user-docs/multi-main.html</loc>
+    	<loc>http://jbake.org/user-docs/user-guide.html</loc>
     	<lastmod>2023-04-06</lastmod>
     </url>
 
@@ -12,17 +12,12 @@
     </url>
 
     <url>
-    	<loc>http://jbake.org/user-docs/user-guide.html</loc>
+    	<loc>http://jbake.org/user-docs/multi-main.html</loc>
     	<lastmod>2023-04-06</lastmod>
     </url>
 
     <url>
-    	<loc>http://jbake.org/tech-docs/index.html</loc>
-    	<lastmod>2023-04-06</lastmod>
-    </url>
-
-    <url>
-    	<loc>http://jbake.org/tech-docs/50_build.html</loc>
+    	<loc>http://jbake.org/tech-docs/30_technical-documentation.html</loc>
     	<lastmod>2023-04-06</lastmod>
     </url>
 
@@ -32,12 +27,12 @@
     </url>
 
     <url>
-    	<loc>http://jbake.org/tech-docs/10_setup.html</loc>
+    	<loc>http://jbake.org/tech-docs/11_ucascade-configuration-file.html</loc>
     	<lastmod>2023-04-06</lastmod>
     </url>
 
     <url>
-    	<loc>http://jbake.org/tech-docs/11_ucascade-configuration-file.html</loc>
+    	<loc>http://jbake.org/tech-docs/50_build.html</loc>
     	<lastmod>2023-04-06</lastmod>
     </url>
 
@@ -47,7 +42,12 @@
     </url>
 
     <url>
-    	<loc>http://jbake.org/tech-docs/30_technical-documentation.html</loc>
+    	<loc>http://jbake.org/tech-docs/10_setup.html</loc>
+    	<lastmod>2023-04-06</lastmod>
+    </url>
+
+    <url>
+    	<loc>http://jbake.org/tech-docs/index.html</loc>
     	<lastmod>2023-04-06</lastmod>
     </url>
 
