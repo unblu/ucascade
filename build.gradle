@@ -20,12 +20,14 @@ dependencies {
     implementation 'io.quarkus:quarkus-container-image-jib'
     implementation 'io.quarkus:quarkus-arc'
     implementation 'org.gitlab4j:gitlab4j-api:5.1.0'
+    implementation 'eu.mulk.quarkus-googlecloud-jsonlogging:quarkus-googlecloud-jsonlogging:6.0.0'
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.33.2'
 }
 
 group 'com.unblu.ucascade'
+version 'rev_' + grgit.head().abbreviatedId
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -71,6 +73,9 @@ build.timestamp=${java.time.Instant.now().toString()}
 
 quarkus.index-dependency.gitlab4j.group-id=org.gitlab4j
 quarkus.index-dependency.gitlab4j.artifact-id=gitlab4j-api
+
+%dev.quarkus.log.console.google=false
+%test.quarkus.log.console.google=false
 """
     }
 }
