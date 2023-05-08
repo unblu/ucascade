@@ -627,6 +627,7 @@ class UcascadeTest {
 		setupGetMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, null);
 		customProperties = Map.of("source_branch", "\"something\"");
 		setupGetMergeRequestStub(GitlabMockUtil.PROJECT_ID, (mrNumber - 1), customProperties);
+		setupUpdateMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, null);
 		setupGetMRPipelinesRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, true);
 		setupGetFileFromRepositoryRequestStub(GitlabMockUtil.PROJECT_ID, "ucascade.json", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA);
 		MergeRequestSimple mrSimple = GitlabMockUtil.createDefaultMREvent();
@@ -640,10 +641,9 @@ class UcascadeTest {
 				.statusCode(Response.Status.OK.getStatusCode())
 				.body(startsWith("{\n"))
 				.body(endsWith("\n}"))
-				.body("created_auto_mr_error", equalTo("GitlabEvent: '" + GitlabMockUtil.GITLAB_EVENT_UUID + "' | Cannot accept merge request '!" + mrNumber +
-						"' from '" + sourceBranch + "' into '" + nextMainBranch + "' in project '" + GitlabMockUtil.PROJECT_ID + "'"));
+				.body("created_auto_mr.ucascade_state", equalTo(MergeRequestUcascadeState.NOT_MERGED_UNKNOWN_REASON.name()));
 
-		verifyRequests(210);
+		verifyRequests(212);
 	}
 
 	@Test

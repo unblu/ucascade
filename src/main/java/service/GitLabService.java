@@ -242,7 +242,7 @@ public class GitLabService {
 
 		// approve auto merge-request
 		if (gitlabApprover != null) {
-			approveMergeRequest(gitlabEventUUID, gitlabApprover.getMergeRequestApi(), iid, mr.getProjectId());
+			approveMergeRequest(gitlabEventUUID, mr);
 		}
 
 		String branchPattern = addMrPrefixPattern(sourceBranchOfSourceBranch);
@@ -315,12 +315,15 @@ public class GitLabService {
 		return cascadedBranches;
 	}
 
-	private MergeRequest approveMergeRequest(String gitlabEventUUID, MergeRequestApi mrApi, Long mrNumber, Long project) {
-		MergeRequest mr;
+	private MergeRequest approveMergeRequest(String gitlabEventUUID, MergeRequest mr) {
+		final Long project = mr.getProjectId();
+		final Long mrNumber = mr.getIid();
+		MergeRequestApi mrApi = gitlabApprover.getMergeRequestApi();
 		try {
 			Log.infof("GitlabEvent: '%s' | Approving MR '!%d' in project '%d'", gitlabEventUUID, mrNumber, project);
 			mr = mrApi.approveMergeRequest(project, mrNumber, null);
 		} catch (GitLabApiException e) {
+			assignMrToCascadeResponsible(gitlabEventUUID, mr);
 			throw new IllegalStateException(String.format("GitlabEvent: '%s' | Cannot approve merge request '!%d' in project '%d'", gitlabEventUUID, mrNumber, project), e);
 		}
 
@@ -328,11 +331,11 @@ public class GitLabService {
 	}
 
 	private MergeRequestResult acceptAutoMergeRequest(String gitlabEventUUID, MergeRequest mr) {
-		Long mrNumber = mr.getIid();
-		Long project = mr.getProjectId();
+		final Long mrNumber = mr.getIid();
+		final Long project = mr.getProjectId();
 
 		// wait for MR to leave the checking stage
-		mr = waitForMrToLeaveCheckingStage(gitlabEventUUID, mr, mrNumber, project);
+		mr = waitForMrToLeaveCheckingStage(gitlabEventUUID, mr);
 		String mergeStatus = mr.getDetailedMergeStatus();
 
 		MergeRequestApi mrApi = gitlab.getMergeRequestApi();
@@ -348,7 +351,7 @@ public class GitLabService {
 
 			int countDown = MAX_RETRY_ATTEMPTS;
 			while (state != MergeRequestUcascadeState.MERGED && countDown-- > 0) {
-				boolean hasPipeline = hasPipeline(gitlabEventUUID, project, mrNumber);
+				boolean hasPipeline = hasPipeline(gitlabEventUUID, mr);
 				acceptMrParams.withMergeWhenPipelineSucceeds(hasPipeline);
 				Log.infof("GitlabEvent: '%s' | Merging MR '!%d': '%s' -> '%s' when pipeline succeeds: '%b'", gitlabEventUUID, mrNumber, sourceBranch, targetBranch, hasPipeline);
 				try {
@@ -356,7 +359,9 @@ public class GitLabService {
 					state = MergeRequestUcascadeState.MERGED;
 				} catch (GitLabApiException e) {
 					if (countDown == 0) {
-						throw new IllegalStateException(String.format("GitlabEvent: '%s' | Cannot accept merge request '!%d' from '%s' into '%s' in project '%d'", gitlabEventUUID, mrNumber, sourceBranch, targetBranch, project), e);
+						Log.warnf(e, "GitlabEvent: '%s' | Cannot accept merge request '!%d' from '%s' into '%s' in project '%d'", gitlabEventUUID, mrNumber, sourceBranch, targetBranch, project);
+						state = MergeRequestUcascadeState.NOT_MERGED_UNKNOWN_REASON;
+						mr = assignMrToCascadeResponsible(gitlabEventUUID, mr);
 					} else {
 						Log.infof("GitlabEvent: '%s' | Merge failed for MR '!%d'. Retrying... %d", gitlabEventUUID, mrNumber, Math.abs(countDown - MAX_RETRY_ATTEMPTS));
 						try {
@@ -370,24 +375,13 @@ public class GitLabService {
 		} else {
 			// if possible, assign merge responsibility to a real user
 			Log.infof("GitlabEvent: '%s' | Automatic merge failed - status: '%s'. Finding cascade responsible for MR '!%d'", gitlabEventUUID, mergeStatus, mrNumber);
-			Long cascadeResponsibleId = getCascadeResponsible(gitlabEventUUID, project, getPrevMergeRequestNumber(mr.getSourceBranch()));
-			if (cascadeResponsibleId != null) {
-				Log.infof("GitlabEvent: '%s' | Assigning MR '!%d' to cascade responsible with id '%d'", gitlabEventUUID, mrNumber, cascadeResponsibleId);
-				try {
-					MergeRequestParams mrParams = new MergeRequestParams();
-					mrParams.withAssigneeId(cascadeResponsibleId);
-					mr = mrApi.updateMergeRequest(project, mr.getIid(), mrParams);
-				} catch (GitLabApiException e) {
-					Log.warnf(e, "GitlabEvent: '%s' | MR '!%d' cannot change the assignee to user %d", gitlabEventUUID, mrNumber, cascadeResponsibleId);
-				}
-
-				boolean hasConflicts = mr.getHasConflicts() != null && mr.getHasConflicts();
-				if (hasConflicts) {
-					Log.infof("GitlabEvent: '%s' | Abort: conflict detected in MR '!%d'", gitlabEventUUID, mr.getIid());
-					state = MergeRequestUcascadeState.NOT_MERGED_CONFLICTS;
-				} else {
-					Log.warnf("GitlabEvent: '%s' | MR '!%d' cannot be merged for unknown reasons", gitlabEventUUID, mrNumber);
-				}
+			mr = assignMrToCascadeResponsible(gitlabEventUUID, mr);
+			boolean hasConflicts = mr.getHasConflicts() != null && mr.getHasConflicts();
+			if (hasConflicts) {
+				Log.infof("GitlabEvent: '%s' | Abort: conflict detected in MR '!%d'", gitlabEventUUID, mr.getIid());
+				state = MergeRequestUcascadeState.NOT_MERGED_CONFLICTS;
+			} else {
+				Log.warnf("GitlabEvent: '%s' | MR '!%d' cannot be merged for unknown reasons", gitlabEventUUID, mrNumber);
 			}
 		}
 
@@ -396,11 +390,35 @@ public class GitLabService {
 		return result;
 	}
 
+	/**
+	 * Assign a merge-request to the cascade responsible user. The cascade responsible is the real user that merged the merge-request that initiated the cascade.
+	 *
+	 * @param gitlabEventUUID the gitlab event UUID
+	 * @param mr the merge-request that will be assigned to the cascade responsible
+	 * @return the updated merge-request object, where the assignee is the cascade responsible user
+	 */
+	private MergeRequest assignMrToCascadeResponsible(String gitlabEventUUID, MergeRequest mr) {
+		final Long mrNumber = mr.getIid();
+		final Long project = mr.getProjectId();
+		Long cascadeResponsibleId = getCascadeResponsible(gitlabEventUUID, project, getPrevMergeRequestNumber(mr.getSourceBranch()));
+		if (cascadeResponsibleId != null) {
+			Log.infof("GitlabEvent: '%s' | Assigning MR '!%d' to cascade responsible with id '%d'", gitlabEventUUID, mrNumber, cascadeResponsibleId);
+			try {
+				MergeRequestParams mrParams = new MergeRequestParams();
+				mrParams.withAssigneeId(cascadeResponsibleId);
+				mr = gitlab.getMergeRequestApi().updateMergeRequest(project, mrNumber, mrParams);
+			} catch (GitLabApiException e) {
+				Log.warnf(e, "GitlabEvent: '%s' | MR '!%d' cannot change the assignee to user %d", gitlabEventUUID, mrNumber, cascadeResponsibleId);
+			}
+		}
+		return mr;
+	}
+
 	private String addMrPrefixPattern(String branchName) {
 		return UCASCADE_BRANCH_PATTERN_PREFIX + Pattern.quote(branchName);
 	}
 
-	private MergeRequest waitForMrToLeaveCheckingStage(String gitlabEventUUID, MergeRequest mr, Long mrNumber, Long project) {
+	private MergeRequest waitForMrToLeaveCheckingStage(String gitlabEventUUID, MergeRequest mr) {
 		int countDown = MAX_RETRY_ATTEMPTS;
 		String mrStatus = mr.getDetailedMergeStatus();
 		while (mrStatus.matches("unchecked|checking") && countDown-- > 0) {
@@ -413,15 +431,17 @@ public class GitLabService {
 			try {
 				// update local object
 				MergeRequestApi mrApi = gitlab.getMergeRequestApi();
-				mr = mrApi.getMergeRequest(project, mrNumber);
+				mr = mrApi.getMergeRequest(mr.getProjectId(), mr.getIid());
 				mrStatus = mr.getDetailedMergeStatus();
 			} catch (GitLabApiException e) {
-				throw new IllegalStateException(String.format("GitlabEvent: '%s' | Cannot retrieve MR '!%d'", gitlabEventUUID, mrNumber), e);
+				mr = assignMrToCascadeResponsible(gitlabEventUUID, mr);
+				throw new IllegalStateException(String.format("GitlabEvent: '%s' | Cannot retrieve MR '!%d'", gitlabEventUUID, mr.getIid()), e);
 			}
 		}
 
 		if (countDown < 0) {
-			throw new IllegalStateException(String.format("GitlabEvent: '%s' | Timeout: MR '!%d' is locked in the '%s' status", gitlabEventUUID, mrNumber, mrStatus));
+			mr = assignMrToCascadeResponsible(gitlabEventUUID, mr);
+			throw new IllegalStateException(String.format("GitlabEvent: '%s' | Timeout: MR '!%d' is locked in the '%s' status", gitlabEventUUID, mr.getIid(), mrStatus));
 		}
 		return mr;
 	}
@@ -466,12 +486,13 @@ public class GitLabService {
 		}
 	}
 
-	private boolean hasPipeline(String gitlabEventUUID, Long project, Long mrNumber) {
+	private boolean hasPipeline(String gitlabEventUUID, MergeRequest mr) {
 		try {
 			MergeRequestApi mrApi = gitlab.getMergeRequestApi();
-			return !mrApi.getMergeRequestPipelines(project, mrNumber).isEmpty();
+			return !mrApi.getMergeRequestPipelines(mr.getProjectId(), mr.getIid()).isEmpty();
 		} catch (GitLabApiException e) {
-			throw new IllegalStateException(String.format("GitlabEvent: '%s' | Cannot retrieve pipelines for merge request '!%d' in project '%d'", gitlabEventUUID, mrNumber, project), e);
+			assignMrToCascadeResponsible(gitlabEventUUID, mr);
+			throw new IllegalStateException(String.format("GitlabEvent: '%s' | Cannot retrieve pipelines for merge request '!%d' in project '%d'", gitlabEventUUID, mr.getIid(), mr.getProjectId()), e);
 		}
 	}
 
