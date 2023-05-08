@@ -1,6 +1,12 @@
 package service;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Base64;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,7 +22,11 @@ import org.gitlab4j.api.Constants.MergeRequestState;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.MergeRequestApi;
-import org.gitlab4j.api.models.*;
+import org.gitlab4j.api.models.AcceptMergeRequestParams;
+import org.gitlab4j.api.models.Assignee;
+import org.gitlab4j.api.models.Branch;
+import org.gitlab4j.api.models.MergeRequest;
+import org.gitlab4j.api.models.MergeRequestParams;
 
 import controller.model.CascadeResult;
 import controller.model.DeleteBranchResult;
