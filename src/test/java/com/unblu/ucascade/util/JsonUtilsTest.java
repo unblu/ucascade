@@ -3,6 +3,7 @@ package com.unblu.ucascade.util;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.gitlab4j.api.Constants.MergeRequestState;
 import org.gitlab4j.api.utils.JacksonJson;
@@ -126,7 +127,7 @@ class JsonUtilsTest {
 		previousAutoMrMerged.setUcascadeState(MergeRequestUcascadeState.MERGED);
 
 		MergeRequestResult createdAutoMr = new MergeRequestResult();
-		createdAutoMr.setAssigneeId(40L);
+		createdAutoMr.setAssigneeIds(List.of(40L));
 		createdAutoMr.setId(38L);
 		createdAutoMr.setIid(38L);
 		createdAutoMr.setProjectId(1L);

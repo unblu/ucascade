@@ -25,7 +25,21 @@
     "avatar_url" : "https://www.gravatar.com/avatar/e633807329b048c67a0431d8df47057e?s=80&d=identicon",
     "web_url" : "http://localhost:9080/root"
   },
-  "assignees" : [ ],
+  "assignees" : [{
+    "id" : 987,
+    "name" : "John Doe1",
+    "username" : "user1",
+    "state" : "active",
+    "avatar_url" : "http://www.gravatar.com/avatar/c922747a93b40d1ea88262bf1aebee62?s=80&d=identicon",
+    "web_url" : "http://localhost/user1"
+  },{
+    "id" : 988,
+    "name" : "John Doe2",
+    "username" : "user2",
+    "state" : "active",
+    "avatar_url" : "http://www.gravatar.com/avatar/c922747a93b40d1ea88262bf1aebee62?s=80&d=identicon",
+    "web_url" : "http://localhost/user2"
+  }],
   "assignee" : {
   	"id" : 987,
     "name" : "John Doe1",

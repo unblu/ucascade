@@ -1,14 +1,10 @@
 package service;
 
-import java.util.ArrayDeque;
-import java.util.Base64;
-import java.util.Comparator;
-import java.util.Deque;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
@@ -20,10 +16,7 @@ import org.gitlab4j.api.Constants.MergeRequestState;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.MergeRequestApi;
-import org.gitlab4j.api.models.AcceptMergeRequestParams;
-import org.gitlab4j.api.models.Branch;
-import org.gitlab4j.api.models.MergeRequest;
-import org.gitlab4j.api.models.MergeRequestParams;
+import org.gitlab4j.api.models.*;
 
 import controller.model.CascadeResult;
 import controller.model.DeleteBranchResult;
@@ -391,7 +384,8 @@ public class GitLabService {
 	}
 
 	/**
-	 * Assign a merge-request to the cascade responsible user. The cascade responsible is the real user that merged the merge-request that initiated the cascade.
+	 * Assign a merge-request to the cascade responsible user(s). The cascade responsible users are all the assignees plus the merger of the merge-request that
+	 * initiated the cascade.
 	 *
 	 * @param gitlabEventUUID the gitlab event UUID
 	 * @param mr the merge-request that will be assigned to the cascade responsible
@@ -400,15 +394,18 @@ public class GitLabService {
 	private MergeRequest assignMrToCascadeResponsible(String gitlabEventUUID, MergeRequest mr) {
 		final Long mrNumber = mr.getIid();
 		final Long project = mr.getProjectId();
-		Long cascadeResponsibleId = getCascadeResponsible(gitlabEventUUID, project, getPrevMergeRequestNumber(mr.getSourceBranch()));
-		if (cascadeResponsibleId != null) {
-			Log.infof("GitlabEvent: '%s' | Assigning MR '!%d' to cascade responsible with id '%d'", gitlabEventUUID, mrNumber, cascadeResponsibleId);
+		List<Long> cascadeResponsibleIds = getCascadeResponsibleIds(gitlabEventUUID, project, getPrevMergeRequestNumber(mr.getSourceBranch()));
+		if (cascadeResponsibleIds != null) {
+			Log.infof("GitlabEvent: '%s' | Assigning MR '!%d' to cascade responsible(s) with id(s): '%s'",
+					gitlabEventUUID,
+					mrNumber,
+					cascadeResponsibleIds.stream().map(String::valueOf).collect(Collectors.joining("', '")));
 			try {
 				MergeRequestParams mrParams = new MergeRequestParams();
-				mrParams.withAssigneeId(cascadeResponsibleId);
+				mrParams.withAssigneeIds(cascadeResponsibleIds);
 				mr = gitlab.getMergeRequestApi().updateMergeRequest(project, mrNumber, mrParams);
 			} catch (GitLabApiException e) {
-				Log.warnf(e, "GitlabEvent: '%s' | MR '!%d' cannot change the assignee to user %d", gitlabEventUUID, mrNumber, cascadeResponsibleId);
+				Log.warnf(e, "GitlabEvent: '%s' | MR '!%d' cannot change the assignee to user %d", gitlabEventUUID, mrNumber, cascadeResponsibleIds);
 			}
 		}
 		return mr;
@@ -504,31 +501,38 @@ public class GitLabService {
 		}
 	}
 
-	private Long getCascadeResponsible(String gitlabEventUUID, Long project, Long mrNumber) {
+	private List<Long> getCascadeResponsibleIds(String gitlabEventUUID, Long project, Long mrNumber) {
 		Log.infof("GitlabEvent: '%s' | Backtracing cascade responsible: get merge request '!%d' in project '%d'", gitlabEventUUID, mrNumber, project);
 		MergeRequest mr = getMr(gitlabEventUUID, project, mrNumber);
-		if (mr != null) {
-			Long mrMerger = mr.getMergeUser().getId();
-			Log.infof("GitlabEvent: '%s' | MR merger has id '%d', ucascade user has id '%d'", gitlabEventUUID, mrMerger, ucascadeUser);
-
-			if (Objects.equals(mrMerger, ucascadeUser)) {
-				Long prevMRNumber = getPrevMergeRequestNumber(mr.getSourceBranch());
-				if (prevMRNumber == null) {
-					Log.warnf("GitlabEvent: '%s' | Cannot get cascade responsible of merge request '!%d' in project '%d' (could not compute the previous MR)", gitlabEventUUID, mrNumber, project);
-					return null;
-				} else {
-					Long cascadeResponsibleId = getCascadeResponsible(gitlabEventUUID, project, prevMRNumber);
-					if (cascadeResponsibleId == null) {
-						Log.warnf("GitlabEvent: '%s' | Cannot get cascade responsible of merge request '!%d' in project '%d'", gitlabEventUUID, mrNumber, project);
-					}
-					return cascadeResponsibleId;
-				}
-			} else {
-				return mrMerger;
-			}
-		} else {
+		if (mr == null) {
 			return null;
 		}
+
+		Long mrMerger = mr.getMergeUser().getId();
+		Log.infof("GitlabEvent: '%s' | MR merger has id '%d', ucascade user has id '%d'", gitlabEventUUID, mrMerger, ucascadeUser);
+
+		if (!Objects.equals(mrMerger, ucascadeUser)) {
+			// success exit point, found the origin mr
+			List<Long> cascadeResponsibleIds = mr.getAssignees().stream().map(Assignee::getId).collect(Collectors.toList());
+			if (!cascadeResponsibleIds.contains(mrMerger)) {
+				cascadeResponsibleIds.add(mrMerger);
+			}
+			return cascadeResponsibleIds;
+		}
+
+		Long prevMRNumber = getPrevMergeRequestNumber(mr.getSourceBranch());
+		if (prevMRNumber == null) {
+			// could not find the previous mr
+			Log.warnf("GitlabEvent: '%s' | Cannot get cascade responsible of merge request '!%d' in project '%d' (could not compute the previous MR)", gitlabEventUUID, mrNumber, project);
+			return null;
+		}
+
+		// get the cascade responsible for the previous mr
+		List<Long> cascadeResponsibleIds = getCascadeResponsibleIds(gitlabEventUUID, project, prevMRNumber);
+		if (cascadeResponsibleIds == null) {
+			Log.warnf("GitlabEvent: '%s' | Cannot get cascade responsible of merge request '!%d' in project '%d'", gitlabEventUUID, mrNumber, project);
+		}
+		return cascadeResponsibleIds;
 	}
 
 	private MergeRequest getMr(String gitlabEventUUID, Long project, Long mrNumber) {

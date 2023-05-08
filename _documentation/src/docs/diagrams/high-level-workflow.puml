@@ -37,7 +37,7 @@ else #Pink MR #2 cannot be merged case
         ucascade->restAPI: Get preceding MR
         restAPI-->ucascade: MR
     end
-    ucascade->restAPI: Assign current MR to the MR merger found\n(the user responsible for the cascade: UserA)
+    ucascade->restAPI: Assign current MR to the merger and assignees of the MR found\n(users responsible for the cascade)
     user<-gitlab: Notification requiring manual intervention due to conflicts in MR #2
 end
 @enduml
