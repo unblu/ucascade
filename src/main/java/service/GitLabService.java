@@ -406,10 +406,7 @@ public class GitLabService {
 		final Long project = mr.getProjectId();
 		List<Long> cascadeResponsibleIds = getCascadeResponsibleIds(gitlabEventUUID, project, getPrevMergeRequestNumber(mr.getSourceBranch()));
 		if (cascadeResponsibleIds != null) {
-			Log.infof("GitlabEvent: '%s' | Assigning MR '!%d' to cascade responsible(s) with id(s): '%s'",
-					gitlabEventUUID,
-					mrNumber,
-					cascadeResponsibleIds.stream().map(String::valueOf).collect(Collectors.joining("', '")));
+			Log.infof("GitlabEvent: '%s' | Assigning MR '!%d' to cascade responsible(s) with id(s): '%s'", gitlabEventUUID, mrNumber, cascadeResponsibleIds);
 			try {
 				MergeRequestParams mrParams = new MergeRequestParams();
 				mrParams.withAssigneeIds(cascadeResponsibleIds);
