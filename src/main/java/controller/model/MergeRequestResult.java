@@ -8,8 +8,10 @@
  */
 package controller.model;
 
+import java.util.List;
 import java.util.Objects;
 
+import org.gitlab4j.api.models.Assignee;
 import org.gitlab4j.api.models.MergeRequest;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,8 +27,8 @@ public class MergeRequestResult {
 	@JsonProperty("mr_number")
 	private Long iid;
 
-	@JsonProperty("assignee_id")
-	private Long assigneeId;
+	@JsonProperty("assignee_ids")
+	private List<Long> assigneeIds;
 
 	@JsonProperty("title")
 	private String title;
@@ -67,7 +69,7 @@ public class MergeRequestResult {
 		sourceBranch = mr.getSourceBranch();
 		targetBranch = mr.getTargetBranch();
 		webUrl = mr.getWebUrl();
-		assigneeId = mr.getAssignee() == null ? null : mr.getAssignee().getId();
+		assigneeIds = mr.getAssignees() == null ? null : mr.getAssignees().stream().map(Assignee::getId).toList();
 	}
 
 	public MergeRequestResult() {
@@ -97,12 +99,12 @@ public class MergeRequestResult {
 		this.projectId = projectId;
 	}
 
-	public Long getAssigneeId() {
-		return assigneeId;
+	public List<Long> getAssigneeIds() {
+		return assigneeIds;
 	}
 
-	public void setAssigneeId(Long assigneeId) {
-		this.assigneeId = assigneeId;
+	public void setAssigneeIds(List<Long> assigneeIds) {
+		this.assigneeIds = assigneeIds;
 	}
 
 	public String getTitle() {
@@ -179,7 +181,7 @@ public class MergeRequestResult {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(assigneeId, description, hasConflicts, id, iid, detailedMergeStatus, projectId, sourceBranch, state, targetBranch, title, ucascadeState, webUrl);
+		return Objects.hash(assigneeIds, description, detailedMergeStatus, hasConflicts, id, iid, projectId, sourceBranch, state, targetBranch, title, ucascadeState, webUrl);
 	}
 
 	@Override
@@ -191,12 +193,12 @@ public class MergeRequestResult {
 		if (getClass() != obj.getClass())
 			return false;
 		MergeRequestResult other = (MergeRequestResult) obj;
-		return Objects.equals(assigneeId, other.assigneeId) &&
+		return Objects.equals(assigneeIds, other.assigneeIds) &&
 				Objects.equals(description, other.description) &&
+				Objects.equals(detailedMergeStatus, other.detailedMergeStatus) &&
 				Objects.equals(hasConflicts, other.hasConflicts) &&
 				Objects.equals(id, other.id) &&
 				Objects.equals(iid, other.iid) &&
-				Objects.equals(detailedMergeStatus, other.detailedMergeStatus) &&
 				Objects.equals(projectId, other.projectId) &&
 				Objects.equals(sourceBranch, other.sourceBranch) &&
 				Objects.equals(state, other.state) &&
@@ -208,6 +210,7 @@ public class MergeRequestResult {
 
 	@Override
 	public String toString() {
-		return "MergeRequestResult [id=" + id + ", projectId=" + projectId + ", iid=" + iid + ", assigneeId=" + assigneeId + ", title=" + title + ", description=" + description + ", state=" + state + ", mergeStatus=" + detailedMergeStatus + ", hasConflicts=" + hasConflicts + ", sourceBranch=" + sourceBranch + ", targetBranch=" + targetBranch + ", webUrl=" + webUrl + ", ucascadeState=" + ucascadeState + "]";
+		return "MergeRequestResult [id=" + id + ", projectId=" + projectId + ", iid=" + iid + ", assigneeIds=" + assigneeIds + ", title=" + title + ", description=" + description + ", state=" + state + ", detailedMergeStatus=" + detailedMergeStatus + ", hasConflicts=" + hasConflicts + ", sourceBranch=" + sourceBranch + ", targetBranch=" + targetBranch + ", webUrl=" + webUrl + ", ucascadeState=" + ucascadeState + "]";
 	}
+
 }

@@ -39,7 +39,7 @@ if (incoming request?) then (yes)
                             while(MR merger) is (ucascade user)
                                 :get user that merged the preceding MR;
                             endwhile (not the ucascade user)
-                            :update MR to set its assignee to the MR merger;
+                            :update MR to set its assignees to the MR assignees and merger;
                         endswitch
                     endif
                 else (no)

@@ -395,7 +395,7 @@ class UcascadeTest {
 				.body("created_auto_mr.detailed_merge_status", equalTo("broken_status"))
 				.body("created_auto_mr.has_conflicts", equalTo(true))
 				.body("created_auto_mr.ucascade_state", equalTo(MergeRequestUcascadeState.NOT_MERGED_CONFLICTS.name()))
-				.body("created_auto_mr.assignee_id", equalTo(987)) // the merge_user of the previous MR
+				.body("created_auto_mr.assignee_ids", equalTo(List.of(987, 988))) // the merge_user + assignee of the previous MR
 				.body("existing_branch_deleted", nullValue());
 
 		verifyRequests(12);
@@ -444,7 +444,7 @@ class UcascadeTest {
 				.body("created_auto_mr.detailed_merge_status", equalTo("policies_denied"))
 				.body("created_auto_mr.has_conflicts", equalTo(false))
 				.body("created_auto_mr.ucascade_state", equalTo(MergeRequestUcascadeState.NOT_MERGED_UNKNOWN_REASON.name()))
-				.body("created_auto_mr.assignee_id", equalTo(987)) // the merge_user of the previous MR
+				.body("created_auto_mr.assignee_ids", equalTo(List.of(987, 988))) // the merge_user + assignee of the previous MR
 				.body("existing_branch_deleted", nullValue());
 
 		verifyRequests(12);
