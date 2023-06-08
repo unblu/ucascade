@@ -30,7 +30,7 @@ public class GitlabMockUtil {
 	 */
 	public static enum GitlabAction {
 		// REST API
-		CREATE_BRANCH, CREATE_MR, ACCEPT_MR, APPROVE_MR, UPDATE_MR, GET_OPEN_MRS, GET_MR, GET_BRANCH, GET_FILE, LIST_MR_PIPELINES, COMPARE_DIFF_BRANCHES, COMPARE_NO_DIFF_BRANCHES, GET_USER,
+		CREATE_BRANCH, CREATE_MR, ACCEPT_MR, APPROVE_MR, GET_APPROVALS, UPDATE_MR, GET_OPEN_MRS, GET_MR, GET_BRANCH, GET_FILE, LIST_MR_PIPELINES, COMPARE_DIFF_BRANCHES, COMPARE_NO_DIFF_BRANCHES, GET_USER,
 		// Webhook
 		EVENT_MR_MERGED;
 	}
@@ -62,6 +62,7 @@ public class GitlabMockUtil {
 		templates.put(GitlabAction.CREATE_MR, "/gitlab_template_json/api/createMRResponse.json");
 		templates.put(GitlabAction.ACCEPT_MR, "/gitlab_template_json/api/acceptMRResponse.json");
 		templates.put(GitlabAction.APPROVE_MR, "/gitlab_template_json/api/approveMRResponse.json");
+		templates.put(GitlabAction.GET_APPROVALS, "/gitlab_template_json/api/getMRApprovalsResponse.json");
 		templates.put(GitlabAction.UPDATE_MR, "/gitlab_template_json/api/updateMRResponse.json");
 		templates.put(GitlabAction.GET_OPEN_MRS, "/gitlab_template_json/api/getOpenMRsResponse.json");
 		templates.put(GitlabAction.GET_MR, "/gitlab_template_json/api/getMRResponse.json");
