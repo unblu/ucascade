@@ -66,7 +66,7 @@ public class GitLabService {
 	private static final String UCASCADE_TAG = "[ucascade]";
 	private static final String UCASCADE_BRANCH_PATTERN_PREFIX = "^mr(\\d+)_";
 	private static final String UCASCADE_BRANCH_PATTERN = UCASCADE_BRANCH_PATTERN_PREFIX + ".+";
-	private static final int MAX_RETRY_ATTEMPTS = 100;
+	private static final int MAX_RETRY_ATTEMPTS = 60;
 
 	private GitLabApi gitlab;
 	private GitLabApi gitlabApprover;
@@ -368,7 +368,7 @@ public class GitLabService {
 					} else {
 						Log.infof("GitlabEvent: '%s' | Merge failed for MR '!%d'. Retrying... %d", gitlabEventUUID, mrNumber, Math.abs(countDown - MAX_RETRY_ATTEMPTS));
 						try {
-							TimeUnit.MILLISECONDS.sleep(100);
+							TimeUnit.SECONDS.sleep(1);
 						} catch (InterruptedException ie) {
 							Thread.currentThread().interrupt();
 						}
@@ -427,7 +427,7 @@ public class GitLabService {
 		String mrStatus = mr.getDetailedMergeStatus();
 		while (mrStatus.matches("unchecked|checking") && countDown-- > 0) {
 			try {
-				TimeUnit.MILLISECONDS.sleep(100);
+				TimeUnit.SECONDS.sleep(1);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
