@@ -66,7 +66,7 @@ public class GitLabService {
 	private static final String UCASCADE_TAG = "[ucascade]";
 	private static final String UCASCADE_BRANCH_PATTERN_PREFIX = "^mr(\\d+)_";
 	private static final String UCASCADE_BRANCH_PATTERN = UCASCADE_BRANCH_PATTERN_PREFIX + ".+";
-	private static final int MAX_RETRY_ATTEMPTS = 100;
+	private static final int MAX_RETRY_ATTEMPTS = 60;
 
 	private GitLabApi gitlab;
 	private GitLabApi gitlabApprover;
@@ -333,9 +333,30 @@ public class GitLabService {
 		return mr;
 	}
 
+	private boolean isMergeRequestApproved(String gitlabEventUUID, MergeRequest mr) {
+		final Long project = mr.getProjectId();
+		final Long mrNumber = mr.getIid();
+		try {
+			return gitlab.getMergeRequestApi()
+					.getApprovals(project, mrNumber)
+					.getApprovalsLeft() <= 0;
+		} catch (GitLabApiException e) {
+			assignMrToCascadeResponsible(gitlabEventUUID, mr);
+			throw new IllegalStateException(String.format("GitlabEvent: '%s' | Cannot retrieve approvals for merge request '!%d' in project '%d'", gitlabEventUUID, mrNumber, project), e);
+		}
+	}
+
 	private MergeRequestResult acceptAutoMergeRequest(String gitlabEventUUID, MergeRequest mr) {
 		final Long mrNumber = mr.getIid();
 		final Long project = mr.getProjectId();
+
+		if (!isMergeRequestApproved(gitlabEventUUID, mr)) {
+			mr = assignMrToCascadeResponsible(gitlabEventUUID, mr);
+			Log.warnf("GitlabEvent: '%s' | Merge request '!%d' in project '%d' cannot be accepted because it does not have the required amount of approvals", gitlabEventUUID, mrNumber, project);
+			MergeRequestResult result = new MergeRequestResult(mr);
+			result.setUcascadeState(MergeRequestUcascadeState.NOT_MERGED_MISSING_APPROVALS);
+			return result;
+		}
 
 		// wait for MR to leave the checking stage
 		mr = waitForMrToLeaveCheckingStage(gitlabEventUUID, mr);
@@ -368,7 +389,7 @@ public class GitLabService {
 					} else {
 						Log.infof("GitlabEvent: '%s' | Merge failed for MR '!%d'. Retrying... %d", gitlabEventUUID, mrNumber, Math.abs(countDown - MAX_RETRY_ATTEMPTS));
 						try {
-							TimeUnit.MILLISECONDS.sleep(100);
+							TimeUnit.SECONDS.sleep(1);
 						} catch (InterruptedException ie) {
 							Thread.currentThread().interrupt();
 						}
@@ -427,7 +448,7 @@ public class GitLabService {
 		String mrStatus = mr.getDetailedMergeStatus();
 		while (mrStatus.matches("unchecked|checking") && countDown-- > 0) {
 			try {
-				TimeUnit.MILLISECONDS.sleep(100);
+				TimeUnit.SECONDS.sleep(1);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
