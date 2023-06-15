@@ -387,7 +387,7 @@ public class GitLabService {
 						state = MergeRequestUcascadeState.NOT_MERGED_UNKNOWN_REASON;
 						mr = assignMrToCascadeResponsible(gitlabEventUUID, mr);
 					} else {
-						Log.infof("GitlabEvent: '%s' | Merge failed for MR '!%d'. Retrying... %d", gitlabEventUUID, mrNumber, Math.abs(countDown - MAX_RETRY_ATTEMPTS));
+						Log.infof("GitlabEvent: '%s' | Merge failed for MR '!%d', status '%s'. Retrying... %d", gitlabEventUUID, mrNumber, mergeStatus, Math.abs(countDown - MAX_RETRY_ATTEMPTS));
 						try {
 							TimeUnit.SECONDS.sleep(1);
 						} catch (InterruptedException ie) {
@@ -446,7 +446,7 @@ public class GitLabService {
 	private MergeRequest waitForMrToLeaveCheckingStage(String gitlabEventUUID, MergeRequest mr) {
 		int countDown = MAX_RETRY_ATTEMPTS;
 		String mrStatus = mr.getDetailedMergeStatus();
-		while (mrStatus.matches("unchecked|checking") && countDown-- > 0) {
+		while (mrStatus.matches("unchecked|checking|preparing") && countDown-- > 0) {
 			try {
 				TimeUnit.SECONDS.sleep(1);
 			} catch (InterruptedException e) {
