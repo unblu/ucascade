@@ -405,7 +405,7 @@ public class GitLabService {
 				Log.infof("GitlabEvent: '%s' | Abort: conflict detected in MR '!%d'", gitlabEventUUID, mr.getIid());
 				state = MergeRequestUcascadeState.NOT_MERGED_CONFLICTS;
 			} else {
-				Log.warnf("GitlabEvent: '%s' | MR '!%d' cannot be merged for unknown reasons", gitlabEventUUID, mrNumber);
+				Log.warnf("GitlabEvent: '%s' | MR '!%d', status '%s', cannot be merged for unknown reasons", gitlabEventUUID, mrNumber, mergeStatus);
 			}
 		}
 
