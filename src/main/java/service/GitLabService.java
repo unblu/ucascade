@@ -358,8 +358,8 @@ public class GitLabService {
 			return result;
 		}
 
-		// wait for MR to leave the checking stage
-		mr = waitForMrToLeaveCheckingStage(gitlabEventUUID, mr);
+		// wait for MR to become ready
+		mr = waitForMrReady(gitlabEventUUID, mr);
 		String mergeStatus = mr.getDetailedMergeStatus();
 
 		MergeRequestApi mrApi = gitlab.getMergeRequestApi();
@@ -443,10 +443,11 @@ public class GitLabService {
 		return UCASCADE_BRANCH_PATTERN_PREFIX + Pattern.quote(branchName);
 	}
 
-	private MergeRequest waitForMrToLeaveCheckingStage(String gitlabEventUUID, MergeRequest mr) {
+	private MergeRequest waitForMrReady(String gitlabEventUUID, MergeRequest mr) {
+		boolean approverExists = gitlabApprover != null;
 		int countDown = MAX_RETRY_ATTEMPTS;
 		String mrStatus = mr.getDetailedMergeStatus();
-		while (mrStatus.matches("unchecked|checking|preparing") && countDown-- > 0) {
+		while (!isMrReady(mrStatus, approverExists) && countDown-- > 0) {
 			try {
 				TimeUnit.SECONDS.sleep(1);
 			} catch (InterruptedException e) {
@@ -469,6 +470,15 @@ public class GitLabService {
 			throw new IllegalStateException(String.format("GitlabEvent: '%s' | Timeout: MR '!%d' is locked in the '%s' status", gitlabEventUUID, mr.getIid(), mrStatus));
 		}
 		return mr;
+	}
+
+	public static boolean isMrReady(String mrStatus, boolean approverExists) {
+		if (mrStatus.matches("unchecked|checking|preparing") ||
+				(approverExists && mrStatus.matches("not_approved"))) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	private Branch getBranch(String gitlabEventUUID, Long project, String branchName) {
