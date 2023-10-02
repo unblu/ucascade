@@ -835,6 +835,20 @@ class UcascadeTest {
 		verifyRequests(0);
 	}
 
+	@Test
+	void testMrReady() {
+		Assertions.assertFalse(GitLabService.isMrReady("not_approved", true));
+		Assertions.assertFalse(GitLabService.isMrReady("unchecked", false));
+		Assertions.assertFalse(GitLabService.isMrReady("unchecked", true));
+		Assertions.assertFalse(GitLabService.isMrReady("checking", false));
+		Assertions.assertFalse(GitLabService.isMrReady("checking", true));
+		Assertions.assertFalse(GitLabService.isMrReady("preparing", false));
+		Assertions.assertFalse(GitLabService.isMrReady("preparing", true));
+		Assertions.assertTrue(GitLabService.isMrReady("not_approved", false));
+		Assertions.assertTrue(GitLabService.isMrReady("everything_else", false));
+		Assertions.assertTrue(GitLabService.isMrReady("everything_else", true));
+	}
+
 	private void verifyRequests(int expectedRequestNumber) throws InterruptedException {
 		List<ServeEvent> allServeEvents = waitForRequests(expectedRequestNumber);
 
