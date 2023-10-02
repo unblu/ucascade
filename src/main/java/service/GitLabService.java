@@ -473,12 +473,8 @@ public class GitLabService {
 	}
 
 	public static boolean isMrReady(String mrStatus, boolean approverExists) {
-		if (mrStatus.matches("unchecked|checking|preparing") ||
-				(approverExists && mrStatus.matches("not_approved"))) {
-			return false;
-		} else {
-			return true;
-		}
+		return !(mrStatus.matches("unchecked|checking|preparing") ||
+				(approverExists && mrStatus.matches("not_approved")));
 	}
 
 	private Branch getBranch(String gitlabEventUUID, Long project, String branchName) {
