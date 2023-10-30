@@ -447,7 +447,7 @@ public class GitLabService {
 		boolean approverExists = gitlabApprover != null;
 		int countDown = MAX_RETRY_ATTEMPTS;
 		String mrStatus = mr.getDetailedMergeStatus();
-		while (!isMrReady(mrStatus, approverExists) && countDown-- > 0) {
+		while (!isMrReady(mrStatus, approverExists, mr.getHasConflicts()) && countDown-- > 0) {
 			try {
 				TimeUnit.SECONDS.sleep(1);
 			} catch (InterruptedException e) {
@@ -472,9 +472,11 @@ public class GitLabService {
 		return mr;
 	}
 
-	public static boolean isMrReady(String mrStatus, boolean approverExists) {
-		return !(mrStatus.matches("unchecked|checking|preparing|broken_status") ||
-				(approverExists && mrStatus.matches("not_approved")));
+	public static boolean isMrReady(String mrStatus, boolean approverExists, Boolean hasConflicts) {
+		return !(mrStatus.matches("unchecked|checking|preparing") ||
+				(approverExists && mrStatus.matches("not_approved")) ||
+				(hasConflicts != null && !hasConflicts && mrStatus.matches("broken_status"))
+		);
 	}
 
 	private Branch getBranch(String gitlabEventUUID, Long project, String branchName) {
