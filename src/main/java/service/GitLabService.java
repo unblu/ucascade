@@ -473,7 +473,7 @@ public class GitLabService {
 	}
 
 	public static boolean isMrReady(String mrStatus, boolean approverExists) {
-		return !(mrStatus.matches("unchecked|checking|preparing") ||
+		return !(mrStatus.matches("unchecked|checking|preparing|broken_status") ||
 				(approverExists && mrStatus.matches("not_approved")));
 	}
 

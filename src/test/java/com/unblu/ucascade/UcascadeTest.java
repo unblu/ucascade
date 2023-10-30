@@ -844,6 +844,8 @@ class UcascadeTest {
 		Assertions.assertFalse(GitLabService.isMrReady("checking", true));
 		Assertions.assertFalse(GitLabService.isMrReady("preparing", false));
 		Assertions.assertFalse(GitLabService.isMrReady("preparing", true));
+		Assertions.assertFalse(GitLabService.isMrReady("broken_status", true));
+		Assertions.assertFalse(GitLabService.isMrReady("broken_status", false));
 		Assertions.assertTrue(GitLabService.isMrReady("not_approved", false));
 		Assertions.assertTrue(GitLabService.isMrReady("everything_else", false));
 		Assertions.assertTrue(GitLabService.isMrReady("everything_else", true));
