@@ -475,8 +475,7 @@ public class GitLabService {
 	public static boolean isMrReady(String mrStatus, boolean approverExists, Boolean hasConflicts) {
 		return !(mrStatus.matches("unchecked|checking|preparing") ||
 				(approverExists && mrStatus.matches("not_approved")) ||
-				(hasConflicts != null && !hasConflicts && mrStatus.matches("broken_status"))
-		);
+				(hasConflicts != null && !hasConflicts && mrStatus.matches("broken_status")));
 	}
 
 	private Branch getBranch(String gitlabEventUUID, Long project, String branchName) {
