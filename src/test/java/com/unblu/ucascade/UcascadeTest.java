@@ -837,16 +837,20 @@ class UcascadeTest {
 
 	@Test
 	void testMrReady() {
-		Assertions.assertFalse(GitLabService.isMrReady("not_approved", true));
-		Assertions.assertFalse(GitLabService.isMrReady("unchecked", false));
-		Assertions.assertFalse(GitLabService.isMrReady("unchecked", true));
-		Assertions.assertFalse(GitLabService.isMrReady("checking", false));
-		Assertions.assertFalse(GitLabService.isMrReady("checking", true));
-		Assertions.assertFalse(GitLabService.isMrReady("preparing", false));
-		Assertions.assertFalse(GitLabService.isMrReady("preparing", true));
-		Assertions.assertTrue(GitLabService.isMrReady("not_approved", false));
-		Assertions.assertTrue(GitLabService.isMrReady("everything_else", false));
-		Assertions.assertTrue(GitLabService.isMrReady("everything_else", true));
+		Assertions.assertFalse(GitLabService.isMrReady("not_approved", true, false));
+		Assertions.assertFalse(GitLabService.isMrReady("unchecked", false, false));
+		Assertions.assertFalse(GitLabService.isMrReady("unchecked", true, false));
+		Assertions.assertFalse(GitLabService.isMrReady("checking", false, false));
+		Assertions.assertFalse(GitLabService.isMrReady("checking", true, false));
+		Assertions.assertFalse(GitLabService.isMrReady("preparing", false, false));
+		Assertions.assertFalse(GitLabService.isMrReady("preparing", true, false));
+		Assertions.assertFalse(GitLabService.isMrReady("broken_status", true, false));
+		Assertions.assertFalse(GitLabService.isMrReady("broken_status", false, false));
+		Assertions.assertFalse(GitLabService.isMrReady("broken_status", false, null));
+		Assertions.assertTrue(GitLabService.isMrReady("broken_status", false, true));
+		Assertions.assertTrue(GitLabService.isMrReady("not_approved", false, false));
+		Assertions.assertTrue(GitLabService.isMrReady("everything_else", false, false));
+		Assertions.assertTrue(GitLabService.isMrReady("everything_else", true, false));
 	}
 
 	private void verifyRequests(int expectedRequestNumber) throws InterruptedException {
