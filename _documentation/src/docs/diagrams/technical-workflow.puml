@@ -28,7 +28,7 @@ if (incoming request?) then (yes)
                     if (countDown == 0) then (yes) 
                         :error;
                     else (no)
-                        switch(Is MRStatus == mergeable|ci_still_running|ci_must_pass?)
+                        switch(Is MRStatus == mergeable|ci_still_running|ci_must_pass|status_checks_must_pass?)
                         case (yes)
                             if (MR has pipeline(s)?) then (yes)
                                 :merge when pipeline succeeds;

@@ -364,7 +364,7 @@ public class GitLabService {
 
 		MergeRequestApi mrApi = gitlab.getMergeRequestApi();
 		MergeRequestUcascadeState state = MergeRequestUcascadeState.NOT_MERGED_UNKNOWN_REASON;
-		if (mergeStatus.matches("mergeable|ci_still_running|ci_must_pass")) {
+		if (mergeStatus.matches("mergeable|ci_still_running|ci_must_pass|status_checks_must_pass")) {
 			// Prepare merge:
 			String sourceBranch = mr.getSourceBranch();
 			String sourceBranchPretty = removeMrPrefixPattern(sourceBranch);
