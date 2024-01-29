@@ -185,10 +185,9 @@ public class GitLabService {
 		String branchPattern = addMrPrefixPattern(prevSourceBranch);
 
 		getOpenMergeRequests(gitlabEventUUID, projectId)
-				.filter(openMr -> openMr.getTargetBranch().equals(sourceBranch) &&
-						openMr.getSourceBranch().matches(branchPattern))
-				.sorted(Comparator.comparingLong(MergeRequest::getIid))
-				.findFirst()
+                .filter(openMr -> openMr.getTargetBranch().equals(sourceBranch) &&
+                        openMr.getSourceBranch().matches(branchPattern))
+				.min(Comparator.comparingLong(MergeRequest::getIid))
 				.ifPresent(mr -> {
 					Log.infof("GitlabEvent: '%s' | Found auto merge request between '%s' and '%s' - iid: '%s', mergeWhenPipelineSucceeds: '%s'", gitlabEventUUID, prevSourceBranch, sourceBranch, mr.getIid(), mr.getMergeWhenPipelineSucceeds());
 					if (mr.getMergeWhenPipelineSucceeds() == Boolean.FALSE) {
