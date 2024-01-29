@@ -14,14 +14,14 @@ if (incoming request?) then (yes)
                         :approve the just created MR as that user (apiTokenApprover);
                     else (no)
                     endif
-                    #SkyBlue:initialize countDown to 100;
+                    #SkyBlue:initialize countDown from 60;
                     note right 
                         Timeout to avoid the possibility
                         of getting stuck in the loop forever
                     end note
                     while(MRStatus == unchecked|checking and countdown > 0?) is (yes)
                         #SkyBlue:decrement countDown by 1;
-                        :sleep 100ms;
+                        :sleep 1s;
                         note right: Wait for Gitlab to prepare MR
                         :update MRStatus from Gitlab;
                     endwhile (no)
@@ -51,6 +51,9 @@ if (incoming request?) then (yes)
         else (CLOSE)
             :delete MR source branch;
             if (concurrent open auto MR(s) exist?) then (yes)
+                if (oldest one has conflicts?) then (yes)
+                    :sleep 5s;
+                endif
                 :merge oldest concurrent MR;
             endif
         endif
