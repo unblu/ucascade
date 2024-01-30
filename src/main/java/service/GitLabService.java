@@ -194,7 +194,7 @@ public class GitLabService {
 						if (mr.getHasConflicts() != null && mr.getHasConflicts()) {
 							//wait 5 seconds in order for GitLab to have time to update the merge request status
 							sleepSeconds(5);
-							mr = getFreshMrObject(gitlabEventUUID, mr);
+							mr = getExistingMr(gitlabEventUUID, mr);
 						}
 						MergeRequestResult mrResult = acceptAutoMergeRequest(gitlabEventUUID, mr);
 						result.setPreviousAutoMrMerged(mrResult);
@@ -449,7 +449,7 @@ public class GitLabService {
 		String mrStatus = mr.getDetailedMergeStatus();
 		while (!isMrReady(mrStatus, approverExists, mr.getHasConflicts()) && countDown-- > 0) {
 			sleepSeconds(1);
-			mr = getFreshMrObject(gitlabEventUUID, mr);
+			mr = getExistingMr(gitlabEventUUID, mr);
 			mrStatus = mr.getDetailedMergeStatus();
 		}
 
@@ -460,7 +460,7 @@ public class GitLabService {
 		return mr;
 	}
 
-	private MergeRequest getFreshMrObject(String gitlabEventUUID, MergeRequest mr) {
+	private MergeRequest getExistingMr(String gitlabEventUUID, MergeRequest mr) {
 		try {
 			MergeRequestApi mrApi = gitlab.getMergeRequestApi();
 			return mrApi.getMergeRequest(mr.getProjectId(), mr.getIid());
