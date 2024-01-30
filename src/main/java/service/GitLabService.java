@@ -187,11 +187,15 @@ public class GitLabService {
 		getOpenMergeRequests(gitlabEventUUID, projectId)
 				.filter(openMr -> openMr.getTargetBranch().equals(sourceBranch) &&
 						openMr.getSourceBranch().matches(branchPattern))
-				.sorted(Comparator.comparingLong(MergeRequest::getIid))
-				.findFirst()
+				.min(Comparator.comparingLong(MergeRequest::getIid))
 				.ifPresent(mr -> {
 					Log.infof("GitlabEvent: '%s' | Found auto merge request between '%s' and '%s' - iid: '%s', mergeWhenPipelineSucceeds: '%s'", gitlabEventUUID, prevSourceBranch, sourceBranch, mr.getIid(), mr.getMergeWhenPipelineSucceeds());
 					if (mr.getMergeWhenPipelineSucceeds() == Boolean.FALSE) {
+						if (mr.getHasConflicts() != null && mr.getHasConflicts()) {
+							//wait 5 seconds in order for GitLab to have time to update the merge request status
+							sleepSeconds(5);
+							mr = getExistingMr(gitlabEventUUID, mr);
+						}
 						MergeRequestResult mrResult = acceptAutoMergeRequest(gitlabEventUUID, mr);
 						result.setPreviousAutoMrMerged(mrResult);
 					}
@@ -388,11 +392,7 @@ public class GitLabService {
 						mr = assignMrToCascadeResponsible(gitlabEventUUID, mr);
 					} else {
 						Log.infof("GitlabEvent: '%s' | Merge failed for MR '!%d', status '%s'. Retrying... %d", gitlabEventUUID, mrNumber, mergeStatus, Math.abs(countDown - MAX_RETRY_ATTEMPTS));
-						try {
-							TimeUnit.SECONDS.sleep(1);
-						} catch (InterruptedException ie) {
-							Thread.currentThread().interrupt();
-						}
+						sleepSeconds(1);
 					}
 				}
 			}
@@ -448,21 +448,9 @@ public class GitLabService {
 		int countDown = MAX_RETRY_ATTEMPTS;
 		String mrStatus = mr.getDetailedMergeStatus();
 		while (!isMrReady(mrStatus, approverExists, mr.getHasConflicts()) && countDown-- > 0) {
-			try {
-				TimeUnit.SECONDS.sleep(1);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-
-			try {
-				// update local object
-				MergeRequestApi mrApi = gitlab.getMergeRequestApi();
-				mr = mrApi.getMergeRequest(mr.getProjectId(), mr.getIid());
-				mrStatus = mr.getDetailedMergeStatus();
-			} catch (GitLabApiException e) {
-				mr = assignMrToCascadeResponsible(gitlabEventUUID, mr);
-				throw new IllegalStateException(String.format("GitlabEvent: '%s' | Cannot retrieve MR '!%d'", gitlabEventUUID, mr.getIid()), e);
-			}
+			sleepSeconds(1);
+			mr = getExistingMr(gitlabEventUUID, mr);
+			mrStatus = mr.getDetailedMergeStatus();
 		}
 
 		if (countDown < 0) {
@@ -472,10 +460,20 @@ public class GitLabService {
 		return mr;
 	}
 
+	private MergeRequest getExistingMr(String gitlabEventUUID, MergeRequest mr) {
+		try {
+			MergeRequestApi mrApi = gitlab.getMergeRequestApi();
+			return mrApi.getMergeRequest(mr.getProjectId(), mr.getIid());
+		} catch (GitLabApiException e) {
+			mr = assignMrToCascadeResponsible(gitlabEventUUID, mr);
+			throw new IllegalStateException(String.format("GitlabEvent: '%s' | Cannot retrieve MR '!%d'", gitlabEventUUID, mr.getIid()), e);
+		}
+	}
+
 	public static boolean isMrReady(String mrStatus, boolean approverExists, Boolean hasConflicts) {
 		return !(mrStatus.matches("unchecked|checking|preparing") ||
 				(approverExists && mrStatus.matches("not_approved")) ||
-				((hasConflicts == null || !hasConflicts) && mrStatus.matches("broken_status")));
+				!(hasConflicts != null && hasConflicts) && mrStatus.matches("broken_status"));
 	}
 
 	private Branch getBranch(String gitlabEventUUID, Long project, String branchName) {
@@ -601,6 +599,14 @@ public class GitLabService {
 			return String.format("`%s` %s ", removeMrPrefixPattern(branchName), separator);
 		} else {
 			return String.format("`%s` !%d %s ", removeMrPrefixPattern(branchName), mrNumber, separator);
+		}
+	}
+
+	private static void sleepSeconds(int seconds) {
+		try {
+			TimeUnit.SECONDS.sleep(seconds);
+		} catch (InterruptedException ie) {
+			Thread.currentThread().interrupt();
 		}
 	}
 }
