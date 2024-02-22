@@ -341,9 +341,10 @@ public class GitLabService {
 		final Long project = mr.getProjectId();
 		final Long mrNumber = mr.getIid();
 		try {
-			return Optional.ofNullable(gitlab.getMergeRequestApi()
+			Integer approvalsLeft = gitlab.getMergeRequestApi()
 					.getApprovals(project, mrNumber)
-					.getApprovalsLeft()).orElse(0) <= 0;
+					.getApprovalsLeft();
+			return approvalsLeft == null || approvalsLeft <= 0;
 		} catch (GitLabApiException e) {
 			assignMrToCascadeResponsible(gitlabEventUUID, mr);
 			throw new IllegalStateException(String.format("GitlabEvent: '%s' | Cannot retrieve approvals for merge request '!%d' in project '%d'", gitlabEventUUID, mrNumber, project), e);
