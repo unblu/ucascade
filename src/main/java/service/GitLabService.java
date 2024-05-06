@@ -295,12 +295,12 @@ public class GitLabService {
 
 	private String buildDescription(String gitlabEventUUID, Long project, String sourceBranch, String targetBranch) {
 		StringBuilder descriptionBuilder = new StringBuilder("Automatic cascade merge request: ");
-		Deque<String> cascadedBranches = getCascadedBranches(gitlabEventUUID, project, sourceBranch, targetBranch);
+		Long prevMergeRequestNumber = getPrevMergeRequestNumber(sourceBranch);
+		MergeRequest mr = getMr(gitlabEventUUID, project, prevMergeRequestNumber);
+		Deque<String> cascadedBranches = getCascadedBranches(gitlabEventUUID, project, sourceBranch, targetBranch, mr);
 		for (String branch : cascadedBranches) {
 			descriptionBuilder.append(String.format("%s", branch));
 		}
-		Long prevMergeRequestNumber = getPrevMergeRequestNumber(sourceBranch);
-		MergeRequest mr = getMr(gitlabEventUUID, project, prevMergeRequestNumber);
 		if (mr != null) {
 			descriptionBuilder.append("---");
 			descriptionBuilder.append("<details>");
@@ -314,15 +314,18 @@ public class GitLabService {
 		return descriptionBuilder.toString();
 	}
 
-	private Deque<String> getCascadedBranches(String gitlabEventUUID, Long project, String sourceBranch, String targetBranch) {
+	private Deque<String> getCascadedBranches(String gitlabEventUUID, Long project, String sourceBranch,
+			String targetBranch, MergeRequest prevMergeRequest) {
 		Deque<String> cascadedBranches = new ArrayDeque<>();
 		final String separator = "-->";
 		cascadedBranches.push(formatCascadeElement(null, null, targetBranch));
 		Long pastMrNumber = null;
-		Long currMrNumber = getPrevMergeRequestNumber(sourceBranch);
+		Long currMrNumber = prevMergeRequest.getIid();
 		cascadedBranches.push(formatCascadeElement(separator, null, sourceBranch));
 		while (currMrNumber != null && !currMrNumber.equals(pastMrNumber)) {
-			MergeRequest currMr = getMr(gitlabEventUUID, project, currMrNumber);
+			MergeRequest currMr = currMrNumber.equals(prevMergeRequest.getIid())
+								  ? prevMergeRequest
+								  : getMr(gitlabEventUUID, project, currMrNumber);
 			if (currMr != null) {
 				pastMrNumber = currMrNumber;
 				String itBranch = currMr.getSourceBranch();
