@@ -314,8 +314,7 @@ public class GitLabService {
 		return descriptionBuilder.toString();
 	}
 
-	private Deque<String> getCascadedBranches(String gitlabEventUUID, Long project, String sourceBranch,
-			String targetBranch, MergeRequest prevMergeRequest) {
+	private Deque<String> getCascadedBranches(String gitlabEventUUID, Long project, String sourceBranch, String targetBranch, MergeRequest prevMergeRequest) {
 		Deque<String> cascadedBranches = new ArrayDeque<>();
 		final String separator = "-->";
 		cascadedBranches.push(formatCascadeElement(null, null, targetBranch));
@@ -323,9 +322,7 @@ public class GitLabService {
 		Long currMrNumber = prevMergeRequest.getIid();
 		cascadedBranches.push(formatCascadeElement(separator, null, sourceBranch));
 		while (currMrNumber != null && !currMrNumber.equals(pastMrNumber)) {
-			MergeRequest currMr = currMrNumber.equals(prevMergeRequest.getIid())
-								  ? prevMergeRequest
-								  : getMr(gitlabEventUUID, project, currMrNumber);
+			MergeRequest currMr = currMrNumber.equals(prevMergeRequest.getIid()) ? prevMergeRequest : getMr(gitlabEventUUID, project, currMrNumber);
 			if (currMr != null) {
 				pastMrNumber = currMrNumber;
 				String itBranch = currMr.getSourceBranch();
