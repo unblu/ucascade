@@ -431,7 +431,11 @@ public class GitLabService {
 			Log.infof("GitlabEvent: '%s' | Assigning MR '!%d' to cascade responsible(s) with id(s): '%s'", gitlabEventUUID, mrNumber, cascadeResponsibleIds);
 			try {
 				MergeRequestParams mrParams = new MergeRequestParams();
-				mrParams.withAssigneeIds(cascadeResponsibleIds);
+				if (cascadeResponsibleIds.size() > 1) {
+					mrParams.withAssigneeIds(cascadeResponsibleIds);
+				} else {
+					mrParams.withAssigneeId(cascadeResponsibleIds.iterator().next());
+				}
 				mr = gitlab.getMergeRequestApi().updateMergeRequest(project, mrNumber, mrParams);
 			} catch (GitLabApiException e) {
 				Log.warnf(e, "GitlabEvent: '%s' | MR '!%d' cannot change the assignee to user %d", gitlabEventUUID, mrNumber, cascadeResponsibleIds);
