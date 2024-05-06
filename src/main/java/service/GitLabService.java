@@ -299,6 +299,18 @@ public class GitLabService {
 		for (String branch : cascadedBranches) {
 			descriptionBuilder.append(String.format("%s", branch));
 		}
+		Long prevMergeRequestNumber = getPrevMergeRequestNumber(sourceBranch);
+		MergeRequest mr = getMr(gitlabEventUUID, project, prevMergeRequestNumber);
+		if (mr != null) {
+			descriptionBuilder.append("---");
+			descriptionBuilder.append("<details>");
+			descriptionBuilder.append("<summary>");
+			descriptionBuilder.append("Original description");
+			descriptionBuilder.append("</summary>");
+			String prevDescription = mr.getDescription();
+			descriptionBuilder.append(prevDescription);
+			descriptionBuilder.append("</details>");
+		}
 		return descriptionBuilder.toString();
 	}
 
