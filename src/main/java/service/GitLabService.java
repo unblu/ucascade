@@ -302,7 +302,9 @@ public class GitLabService {
 			descriptionBuilder.append(String.format("%s", branch));
 		}
 		if (mr != null) {
+			descriptionBuilder.append("\n");
 			descriptionBuilder.append("---");
+			descriptionBuilder.append("\n");
 			descriptionBuilder.append("<details>");
 			descriptionBuilder.append("<summary>");
 			descriptionBuilder.append("Original description");
