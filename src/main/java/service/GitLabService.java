@@ -297,6 +297,7 @@ public class GitLabService {
 		StringBuilder descriptionBuilder = new StringBuilder("Automatic cascade merge request: ");
 		Long prevMergeRequestNumber = getPrevMergeRequestNumber(sourceBranch);
 		MergeRequest mr = getMr(gitlabEventUUID, project, prevMergeRequestNumber);
+		Log.infof("Create description for previous MR {}, {}", mr.getIid(), mr);
 		Deque<String> cascadedBranches = getCascadedBranches(gitlabEventUUID, project, sourceBranch, targetBranch, mr);
 		for (String branch : cascadedBranches) {
 			descriptionBuilder.append(String.format("%s", branch));
