@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -297,8 +298,8 @@ public class GitLabService {
 	private String buildDescription(String gitlabEventUUID, Long project, String sourceBranch, String targetBranch) {
 		StringBuilder descriptionBuilder = new StringBuilder("Automatic cascade merge request: ");
 		Long prevMergeRequestNumber = getPrevMergeRequestNumber(sourceBranch);
-		Deque<MergeRequest> cascadedMrs = getCascadedMrs(gitlabEventUUID, project, prevMergeRequestNumber);
-		Deque<String> cascadedBranches = getCascadedBranches(gitlabEventUUID, project, sourceBranch, targetBranch, prevMergeRequestNumber, cascadedMrs.stream().collect(Collectors.toMap(MergeRequest::getIid, e -> e)));
+		TreeMap<Long, MergeRequest> cascadedMrs = getCascadedMrs(gitlabEventUUID, project, prevMergeRequestNumber);
+		Deque<String> cascadedBranches = getCascadedBranches(gitlabEventUUID, project, sourceBranch, targetBranch, prevMergeRequestNumber, cascadedMrs);
 		for (String branch : cascadedBranches) {
 			descriptionBuilder.append(String.format("%s", branch));
 		}
@@ -310,22 +311,22 @@ public class GitLabService {
 			descriptionBuilder.append("<summary>");
 			descriptionBuilder.append("Original description");
 			descriptionBuilder.append("</summary>");
-			String prevDescription = cascadedMrs.getFirst().getDescription();
+			String prevDescription = cascadedMrs.firstEntry().getValue().getDescription();
 			descriptionBuilder.append(prevDescription);
 			descriptionBuilder.append("</details>");
 		}
 		return descriptionBuilder.toString();
 	}
 
-	private Deque<MergeRequest> getCascadedMrs(String gitlabEventUUID, Long project, Long prevMergeRequestNumber) {
-		Deque<MergeRequest> cascadedMrs = new ArrayDeque<>();
+	private TreeMap<Long, MergeRequest> getCascadedMrs(String gitlabEventUUID, Long project, Long prevMergeRequestNumber) {
+		TreeMap<Long, MergeRequest> cascadedMrs = new TreeMap<>();
 		Long pastMrNumber = null;
 		Long currMrNumber = prevMergeRequestNumber;
 		while (currMrNumber != null && !currMrNumber.equals(pastMrNumber)) {
 			MergeRequest currMr = getMr(gitlabEventUUID, project, currMrNumber);
 			if (currMr != null) {
 				pastMrNumber = currMrNumber;
-				cascadedMrs.push(currMr);
+				cascadedMrs.put(currMrNumber, currMr);
 				currMrNumber = getPrevMergeRequestNumber(currMr.getSourceBranch());
 			}
 		}
@@ -341,7 +342,10 @@ public class GitLabService {
 		Long currMrNumber = prevMergeRequestNumber;
 		cascadedBranches.push(formatCascadeElement(separator, null, sourceBranch));
 		while (currMrNumber != null && !currMrNumber.equals(pastMrNumber)) {
-			MergeRequest currMr = cascadedMrs.getOrDefault(currMrNumber, getMr(gitlabEventUUID, project, currMrNumber));
+			MergeRequest currMr = cascadedMrs.get(currMrNumber);
+			if (currMr == null) {
+				currMr = getMr(gitlabEventUUID, project, currMrNumber);
+			}
 			if (currMr != null) {
 				pastMrNumber = currMrNumber;
 				String itBranch = currMr.getSourceBranch();
