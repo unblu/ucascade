@@ -296,7 +296,7 @@ public class GitLabService {
 	}
 
 	private String buildDescription(String gitlabEventUUID, Long project, String sourceBranch, String targetBranch) {
-		StringBuilder descriptionBuilder = new StringBuilder("Automatic cascade merge request: ");
+		StringBuilder descriptionBuilder = new StringBuilder(":twisted_rightwards_arrows: _Automatic cascade merge request_: ");
 		Long prevMergeRequestNumber = getPrevMergeRequestNumber(sourceBranch);
 		TreeMap<Long, MergeRequest> cascadedMrs = getCascadedMrs(gitlabEventUUID, project, prevMergeRequestNumber);
 		Deque<String> cascadedBranches = getCascadedBranches(gitlabEventUUID, project, sourceBranch, targetBranch, prevMergeRequestNumber, cascadedMrs);
@@ -305,11 +305,15 @@ public class GitLabService {
 		}
 		if (!cascadedMrs.isEmpty()) {
 			descriptionBuilder.append("\n");
+			descriptionBuilder.append("\n");
 			descriptionBuilder.append("---");
+			descriptionBuilder.append("\n");
 			descriptionBuilder.append("\n");
 			descriptionBuilder.append("<details>");
 			descriptionBuilder.append("<summary>");
-			descriptionBuilder.append("Original description");
+			descriptionBuilder.append("<strong>");
+			descriptionBuilder.append(":notepad_spiral: Original description");
+			descriptionBuilder.append("</strong>");
 			descriptionBuilder.append("</summary>");
 			String prevDescription = cascadedMrs.firstEntry().getValue().getDescription();
 			descriptionBuilder.append(prevDescription);
@@ -336,7 +340,7 @@ public class GitLabService {
 
 	private Deque<String> getCascadedBranches(String gitlabEventUUID, Long project, String sourceBranch, String targetBranch, Long prevMergeRequestNumber, Map<Long, MergeRequest> cascadedMrs) {
 		Deque<String> cascadedBranches = new ArrayDeque<>();
-		final String separator = "-->";
+		final String separator = "→";
 		cascadedBranches.push(formatCascadeElement(null, null, targetBranch));
 		Long pastMrNumber = null;
 		Long currMrNumber = prevMergeRequestNumber;
