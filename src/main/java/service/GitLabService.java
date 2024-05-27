@@ -473,7 +473,7 @@ public class GitLabService {
 				if (cascadeResponsibleIds.size() > 1) {
 					mrParams.withAssigneeIds(cascadeResponsibleIds);
 				} else {
-					mrParams.withAssigneeId(cascadeResponsibleIds.iterator().next());
+					mrParams.withAssigneeId(cascadeResponsibleIds.get(0));
 				}
 				mr = gitlab.getMergeRequestApi().updateMergeRequest(project, mrNumber, mrParams);
 			} catch (GitLabApiException e) {
