@@ -5,8 +5,10 @@ import java.util.Base64;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -294,23 +296,60 @@ public class GitLabService {
 	}
 
 	private String buildDescription(String gitlabEventUUID, Long project, String sourceBranch, String targetBranch) {
-		StringBuilder descriptionBuilder = new StringBuilder("Automatic cascade merge request: ");
-		Deque<String> cascadedBranches = getCascadedBranches(gitlabEventUUID, project, sourceBranch, targetBranch);
+		StringBuilder descriptionBuilder = new StringBuilder(":twisted_rightwards_arrows: _Automatic cascade merge request_: ");
+		Long prevMergeRequestNumber = getPrevMergeRequestNumber(sourceBranch);
+		TreeMap<Long, MergeRequest> cascadedMrs = getCascadedMrs(gitlabEventUUID, project, prevMergeRequestNumber);
+		Deque<String> cascadedBranches = getCascadedBranches(gitlabEventUUID, project, sourceBranch, targetBranch, prevMergeRequestNumber, cascadedMrs);
 		for (String branch : cascadedBranches) {
 			descriptionBuilder.append(String.format("%s", branch));
+		}
+		if (!cascadedMrs.isEmpty()) {
+			descriptionBuilder.append("\n");
+			descriptionBuilder.append("\n");
+			descriptionBuilder.append("---");
+			descriptionBuilder.append("\n");
+			descriptionBuilder.append("\n");
+			descriptionBuilder.append("<details>");
+			descriptionBuilder.append("<summary>");
+			descriptionBuilder.append("<strong>");
+			descriptionBuilder.append(":notepad_spiral: Original description");
+			descriptionBuilder.append("</strong>");
+			descriptionBuilder.append("</summary>");
+			String prevDescription = cascadedMrs.firstEntry().getValue().getDescription();
+			descriptionBuilder.append(prevDescription);
+			descriptionBuilder.append("</details>");
 		}
 		return descriptionBuilder.toString();
 	}
 
-	private Deque<String> getCascadedBranches(String gitlabEventUUID, Long project, String sourceBranch, String targetBranch) {
-		Deque<String> cascadedBranches = new ArrayDeque<>();
-		final String separator = "-->";
-		cascadedBranches.push(formatCascadeElement(null, null, targetBranch));
+	private TreeMap<Long, MergeRequest> getCascadedMrs(String gitlabEventUUID, Long project, Long prevMergeRequestNumber) {
+		TreeMap<Long, MergeRequest> cascadedMrs = new TreeMap<>();
 		Long pastMrNumber = null;
-		Long currMrNumber = getPrevMergeRequestNumber(sourceBranch);
-		cascadedBranches.push(formatCascadeElement(separator, null, sourceBranch));
+		Long currMrNumber = prevMergeRequestNumber;
 		while (currMrNumber != null && !currMrNumber.equals(pastMrNumber)) {
 			MergeRequest currMr = getMr(gitlabEventUUID, project, currMrNumber);
+			if (currMr != null) {
+				pastMrNumber = currMrNumber;
+				cascadedMrs.put(currMrNumber, currMr);
+				currMrNumber = getPrevMergeRequestNumber(currMr.getSourceBranch());
+			}
+		}
+
+		return cascadedMrs;
+	}
+
+	private Deque<String> getCascadedBranches(String gitlabEventUUID, Long project, String sourceBranch, String targetBranch, Long prevMergeRequestNumber, Map<Long, MergeRequest> cascadedMrs) {
+		Deque<String> cascadedBranches = new ArrayDeque<>();
+		final String separator = "→";
+		cascadedBranches.push(formatCascadeElement(null, null, targetBranch));
+		Long pastMrNumber = null;
+		Long currMrNumber = prevMergeRequestNumber;
+		cascadedBranches.push(formatCascadeElement(separator, null, sourceBranch));
+		while (currMrNumber != null && !currMrNumber.equals(pastMrNumber)) {
+			MergeRequest currMr = cascadedMrs.get(currMrNumber);
+			if (currMr == null) {
+				currMr = getMr(gitlabEventUUID, project, currMrNumber);
+			}
 			if (currMr != null) {
 				pastMrNumber = currMrNumber;
 				String itBranch = currMr.getSourceBranch();
@@ -431,7 +470,11 @@ public class GitLabService {
 			Log.infof("GitlabEvent: '%s' | Assigning MR '!%d' to cascade responsible(s) with id(s): '%s'", gitlabEventUUID, mrNumber, cascadeResponsibleIds);
 			try {
 				MergeRequestParams mrParams = new MergeRequestParams();
-				mrParams.withAssigneeIds(cascadeResponsibleIds);
+				if (cascadeResponsibleIds.size() > 1) {
+					mrParams.withAssigneeIds(cascadeResponsibleIds);
+				} else {
+					mrParams.withAssigneeId(cascadeResponsibleIds.get(0));
+				}
 				mr = gitlab.getMergeRequestApi().updateMergeRequest(project, mrNumber, mrParams);
 			} catch (GitLabApiException e) {
 				Log.warnf(e, "GitlabEvent: '%s' | MR '!%d' cannot change the assignee to user %d", gitlabEventUUID, mrNumber, cascadeResponsibleIds);
