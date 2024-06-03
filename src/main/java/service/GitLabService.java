@@ -315,8 +315,15 @@ public class GitLabService {
 			descriptionBuilder.append(":notepad_spiral: Original description");
 			descriptionBuilder.append("</strong>");
 			descriptionBuilder.append("</summary>");
+			descriptionBuilder.append("\n");
+			descriptionBuilder.append("\n");
 			String prevDescription = cascadedMrs.firstEntry().getValue().getDescription();
-			descriptionBuilder.append(prevDescription);
+			if (prevDescription.isBlank()) {
+				descriptionBuilder.append("_No description_");
+			} else {
+				descriptionBuilder.append(prevDescription);
+			}
+			descriptionBuilder.append("\n");
 			descriptionBuilder.append("</details>");
 		}
 		return descriptionBuilder.toString();
