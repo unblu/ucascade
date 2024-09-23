@@ -19,7 +19,7 @@ if (incoming request?) then (yes)
                         Timeout to avoid the possibility
                         of getting stuck in the loop forever
                     end note
-                    while(MRStatus == unchecked|checking and countdown > 0?) is (yes)
+                    while(MRStatus == unchecked|checking|preparing|approvals_syncing and countdown > 0?) is (yes)
                         #SkyBlue:decrement countDown by 1;
                         :sleep 1s;
                         note right: Wait for Gitlab to prepare MR

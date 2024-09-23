@@ -522,7 +522,7 @@ public class GitLabService {
 	}
 
 	public static boolean isMrReady(String mrStatus, boolean approverExists, Boolean hasConflicts) {
-		return !(mrStatus.matches("unchecked|checking|preparing") ||
+		return !(mrStatus.matches("unchecked|checking|preparing|approvals_syncing") ||
 				(approverExists && mrStatus.matches("not_approved")) ||
 				!(hasConflicts != null && hasConflicts) && mrStatus.matches("broken_status"));
 	}
