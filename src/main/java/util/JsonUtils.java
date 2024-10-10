@@ -49,7 +49,7 @@ public class JsonUtils {
 		result.setSourceBranch(objectAttributes.getSourceBranch());
 		result.setTargetBranch(objectAttributes.getTargetBranch());
 		result.setMrNumber(objectAttributes.getIid());
-		result.setMergeCommitSha(objectAttributes.getMergeCommitSha());
+		result.setStartCommitSha(objectAttributes.getMergeCommitSha() != null ? objectAttributes.getMergeCommitSha() : objectAttributes.getLastCommit().getId());
 		result.setMrState(objectAttributes.getState());
 		result.setMrAction(objectAttributes.getAction());
 

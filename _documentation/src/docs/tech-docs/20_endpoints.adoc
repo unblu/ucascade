@@ -41,7 +41,11 @@ Since GitLab keeps the response obtained when delivering a webhook event and dis
 
 === Replay endpoint
 
-An additional endpoint is available to trigger the process using some simplified input compared to the merge-request event body sent by the GitLab Webhook API.
+An additional endpoint is available to trigger the process using some simplified input compared to the merge-request event body sent by the GitLab Webhook API. In this simplified input, the `start_commit_sha` may correspond to two different things in original merge-request event:
+
+* To the `merge_commit_sha`, in case the merge created a merge commit
+* To the `last_commit.id` in case the fast-forward merge strategy is used (no merge commit)
+
 
 `POST <server url>/ucascade/replay`
 

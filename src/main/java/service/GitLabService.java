@@ -119,7 +119,7 @@ public class GitLabService {
 		String sourceBranch = mrEvent.getSourceBranch();
 		String targetBranch = mrEvent.getTargetBranch();
 		Long mrNumber = mrEvent.getMrNumber();
-		String mergeSha = mrEvent.getMergeCommitSha();
+		String mergeSha = mrEvent.getStartCommitSha();
 		String prevSourceBranch = removeMrPrefixPattern(sourceBranch);
 
 		Log.infof("GitlabEvent: '%s' | Merge MR Event. Project: '%d', User: '%d', Target: '%s', MergeRequestNumber: '%d'",
