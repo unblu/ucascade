@@ -384,7 +384,17 @@
 <div class="sect2">
 <h3 id="_replay_endpoint">Replay endpoint</h3>
 <div class="paragraph">
-<p>An additional endpoint is available to trigger the process using some simplified input compared to the merge-request event body sent by the GitLab Webhook API.</p>
+<p>An additional endpoint is available to trigger the process using some simplified input compared to the merge-request event body sent by the GitLab Webhook API. In this simplified input, the <code>start_commit_sha</code> may correspond to two different things in original merge-request event:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>To the <code>merge_commit_sha</code>, in case the merge created a merge commit</p>
+</li>
+<li>
+<p>To the <code>last_commit.id</code> in case the fast-forward merge strategy is used (no merge commit)</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p><code>POST &lt;server url&gt;/ucascade/replay</code></p>
@@ -401,7 +411,7 @@
   "source_branch" : "feature/1.3.x/some-change",
   "target_branch" : "main/1.3.x",
   "mr_state" : "merged",
-  "merge_commit_sha" : "0c6f9d312b924bff313f60db2f269b5f4901cd95",
+  "start_commit_sha" : "0c6f9d312b924bff313f60db2f269b5f4901cd95",
   "mr_action" : "merge",
   "gitlab_event_uuid" : "replay-394720"
 }</code></pre>
