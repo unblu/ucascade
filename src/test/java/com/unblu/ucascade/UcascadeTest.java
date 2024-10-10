@@ -131,6 +131,41 @@ class UcascadeTest {
 	}
 
 	@Test
+	void testEndpointBlockingFFMergeStrategy() throws Exception {
+		// corresponds to the merge event of MR !100 feature branch targeting branch 'release/6.x.x'
+		// input is the GitLab event JSON
+		// expect to create an auto-merge request: !101
+		Long mrNumber = 101L;
+		String nextMainBranch = GitlabMockUtil.DEFAULT_TARGET_BRANCH;
+		String expectedTitle = "[ucascade-TEST] Auto MR: release/6.x.x -> " + nextMainBranch + " (!100)";
+		String expectedDescription = "Automatic cascade merge request: " + "`something` !" + (mrNumber - 1) + " --> `release/6.x.x` --> `main`";
+
+		setupDefaultStubs();
+
+		given().when()
+				.header("Content-Type", "application/json")
+				.header("X-Gitlab-Event-UUID", GitlabMockUtil.GITLAB_EVENT_UUID)
+				.body(GitlabMockUtil.get(GitlabAction.EVENT_MR_FF_MERGED, null))
+				.post("/ucascade/merge-request-blocking")
+				.then()
+				.statusCode(Response.Status.OK.getStatusCode())
+				.body(startsWith("{\n"))
+				.body(endsWith("\n}"))
+				.body("gitlab_event_uuid", equalTo(GitlabMockUtil.GITLAB_EVENT_UUID))
+				.body("build_commit", equalTo("6af21ad"))
+				.body("build_timestamp", equalTo("2022-01-01T07:21:58.378413Z"))
+				.body("created_auto_mr.title", equalTo(expectedTitle))
+				.body("created_auto_mr.description", equalTo(expectedDescription))
+				.body("created_auto_mr.mr_number", equalTo(mrNumber.intValue()))
+				.body("created_auto_mr.source_branch", equalTo("mr100_release/6.x.x"))
+				.body("created_auto_mr.target_branch", equalTo(nextMainBranch))
+				.body("created_auto_mr.ucascade_state", equalTo(MergeRequestUcascadeState.MERGED.name()))
+				.body("existing_branch_deleted", nullValue());
+
+		verifyRequests(13);
+	}
+
+	@Test
 	void testSuccessCaseMergeEvent() throws Exception {
 		// corresponds to the merge event of MR !100 feature branch targeting branch 'release/6.x.x'
 		// input is using the replay endpoint

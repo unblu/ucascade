@@ -18,8 +18,8 @@ public class MergeRequestSimple {
 	private String targetBranch;
 	@JsonProperty("mr_state")
 	private String mrState;
-	@JsonProperty("merge_commit_sha")
-	private String mergeCommitSha;
+	@JsonProperty("start_commit_sha")
+	private String startCommitSha;
 	@JsonProperty("mr_action")
 	private String mrAction;
 
@@ -30,14 +30,14 @@ public class MergeRequestSimple {
 		super();
 	}
 
-	public MergeRequestSimple(Long projectId, Long mrNumber, Long userId, String sourceBranch, String targetBranch, String mrState, String mergeCommitSha, String mrAction, String gitlabEventUUID) {
+	public MergeRequestSimple(Long projectId, Long mrNumber, Long userId, String sourceBranch, String targetBranch, String mrState, String startCommitSha, String mrAction, String gitlabEventUUID) {
 		this.projectId = projectId;
 		this.mrNumber = mrNumber;
 		this.userId = userId;
 		this.sourceBranch = sourceBranch;
 		this.targetBranch = targetBranch;
 		this.mrState = mrState;
-		this.mergeCommitSha = mergeCommitSha;
+		this.startCommitSha = startCommitSha;
 		this.gitlabEventUUID = gitlabEventUUID;
 		this.mrAction = mrAction;
 	}
@@ -90,12 +90,12 @@ public class MergeRequestSimple {
 		this.mrState = mrState;
 	}
 
-	public String getMergeCommitSha() {
-		return mergeCommitSha;
+	public String getStartCommitSha() {
+		return startCommitSha;
 	}
 
-	public void setMergeCommitSha(String mergeCommitSha) {
-		this.mergeCommitSha = mergeCommitSha;
+	public void setStartCommitSha(String startCommitSha) {
+		this.startCommitSha = startCommitSha;
 	}
 
 	public String getMrAction() {
@@ -116,7 +116,7 @@ public class MergeRequestSimple {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(gitlabEventUUID, mergeCommitSha, mrAction, mrNumber, mrState, projectId, sourceBranch, targetBranch, userId);
+		return Objects.hash(gitlabEventUUID, startCommitSha, mrAction, mrNumber, mrState, projectId, sourceBranch, targetBranch, userId);
 	}
 
 	@Override
@@ -129,7 +129,7 @@ public class MergeRequestSimple {
 			return false;
 		MergeRequestSimple other = (MergeRequestSimple) obj;
 		return Objects.equals(gitlabEventUUID, other.gitlabEventUUID) &&
-				Objects.equals(mergeCommitSha, other.mergeCommitSha) &&
+				Objects.equals(startCommitSha, other.startCommitSha) &&
 				Objects.equals(mrAction, other.mrAction) &&
 				Objects.equals(mrNumber, other.mrNumber) &&
 				Objects.equals(mrState, other.mrState) &&
@@ -141,7 +141,7 @@ public class MergeRequestSimple {
 
 	@Override
 	public String toString() {
-		return "MergeRequestSimple [projectId=" + projectId + ", mrNumber=" + mrNumber + ", userId=" + userId + ", sourceBranch=" + sourceBranch + ", targetBranch=" + targetBranch + ", mrState=" + mrState + ", mergeCommitSha=" + mergeCommitSha + ", mrAction=" + mrAction + ", gitlabEventUUID=" + gitlabEventUUID + "]";
+		return "MergeRequestSimple [projectId=" + projectId + ", mrNumber=" + mrNumber + ", userId=" + userId + ", sourceBranch=" + sourceBranch + ", targetBranch=" + targetBranch + ", mrState=" + mrState + ", startCommitSha=" + startCommitSha + ", mrAction=" + mrAction + ", gitlabEventUUID=" + gitlabEventUUID + "]";
 	}
 
 }

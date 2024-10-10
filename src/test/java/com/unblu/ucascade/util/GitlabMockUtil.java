@@ -32,7 +32,7 @@ public class GitlabMockUtil {
 		// REST API
 		CREATE_BRANCH, CREATE_MR, ACCEPT_MR, APPROVE_MR, GET_APPROVALS, UPDATE_MR, GET_OPEN_MRS, GET_MR, GET_BRANCH, GET_FILE, LIST_MR_PIPELINES, COMPARE_DIFF_BRANCHES, COMPARE_NO_DIFF_BRANCHES, GET_USER,
 		// Webhook
-		EVENT_MR_MERGED;
+		EVENT_MR_MERGED, EVENT_MR_FF_MERGED;
 	}
 
 	private static final EnumMap<GitlabAction, String> jsonTemplatesLocation = initJsonTemplatesLocationMap();
@@ -73,6 +73,7 @@ public class GitlabMockUtil {
 		templates.put(GitlabAction.COMPARE_NO_DIFF_BRANCHES, "/gitlab_template_json/api/compareNoDiffBranchesResponse.json");
 		templates.put(GitlabAction.GET_USER, "/gitlab_template_json/api/getUserResponse.json");
 		templates.put(GitlabAction.EVENT_MR_MERGED, "/gitlab_template_json/webhook/mergedMREvent.json");
+		templates.put(GitlabAction.EVENT_MR_FF_MERGED, "/gitlab_template_json/webhook/mergedFFMREvent.json");
 
 		return templates;
 	}
