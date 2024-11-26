@@ -2,22 +2,6 @@ var documents = [
 
 {
     "id": 0,
-    "uri": "tech-docs/50_build.html",
-    "menu": "tech-docs",
-    "title": "Build",
-    "text": " Table of Contents Build Running the application locally Packaging the application Build a docker image Run the docker image Build Please refer to the Quarkus documentation for more details. Running the application locally You can run your application in dev mode that enables live coding using: ./gradlew --console=PLAIN quarkusDev This will start the application is dev mode, available on port 8080 . For more details check the Quarkus Gradle Tooling page. Packaging the application The application can be packaged using: ./gradlew build It produces the quarkus-run.jar file in the build/quarkus-app/ directory. Be aware that it’s not an über-jar as the dependencies are copied into the build/quarkus-app/lib/ directory. The application is now runnable using java -jar build/quarkus-app/quarkus-run.jar . If you want to build an über-jar , execute the following command: ./gradlew build -Dquarkus.package.type=uber-jar The application, packaged as an über-jar , is now runnable using java -jar build/ucascade-&lt;version&gt;-runner.jar . Build a docker image ./gradlew build \ -Dquarkus.container-image.build=true \ -Dquarkus.container-image.push=true \ -Dquarkus.container-image.registry=&lt;registry name&gt; \ -Dquarkus.container-image.group=&lt;image path&gt; \ -Dquarkus.container-image.name=&lt;image name&gt; \ -Dquarkus.container-image.username=&lt;registry username&gt; \ -Dquarkus.container-image.password=&lt;registry password&gt; Run the docker image docker run -p 8080:8080 -e GITLAB_API_TOKEN=glpat-rXzx1n17cqUnmo437XSf &lt;ucascade image name&gt; The server is running on the 8080 port. "
-},
-
-{
-    "id": 1,
-    "uri": "tech-docs/11_ucascade-configuration-file.html",
-    "menu": "tech-docs",
-    "title": "Configuration File",
-    "text": " Table of Contents Configuration file Configuration file The branches of interest, and the direction and order of the consecutive automatic merges, is configured in the JSON file ucascade.json . This file must be present in the root directory of the repository. Example: { branches : [ { sourceBranchPattern : main/1\\.2\\.x, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x, targetBranch : main/2.0.x }, { sourceBranchPattern : main/2\\.0\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/2.0.x } ] } "
-},
-
-{
-    "id": 2,
     "uri": "tech-docs/30_technical-documentation.html",
     "menu": "tech-docs",
     "title": "Workflow",
@@ -25,15 +9,23 @@ var documents = [
 },
 
 {
-    "id": 3,
-    "uri": "tech-docs/20_endpoints.html",
+    "id": 1,
+    "uri": "tech-docs/50_build.html",
     "menu": "tech-docs",
-    "title": "Endpoints",
-    "text": " Table of Contents Endpoints Main endpoint Blocking endpoint Replay endpoint Readiness and liveness probes Endpoints Main endpoint POST &lt;server url&gt;/ucascade/merge-request This is the principal endpoint, that receive the Merge Request Webhook event sent by GitLab. Requests are processed asynchronously, meaning that GitLab will receive a 202 Accepted response back immediately. Example: { build_commit : 6af21ad, build_timestamp : 2022-01-01T07:21:58.378413Z, gitlab_event_uuid : 62940263-b495-4f7e-b0e8-578c7307f13d } build_commit and build_timestamp allow you to identify the ucascade version. gitlab_event_uuid is the value received in the X-Gitlab-Event-UUID header. Blocking endpoint A secondary endpoint where the process in done in a blocking way is available as well: POST &lt;server url&gt;/ucascade/merge-request-blocking With this blocking endpoint the different actions made by ucascade (see Technical documentation ) are visible in the returned response. Example: { build_commit : 6af21ad, build_timestamp : 2022-01-01T07:21:58.378413Z, gitlab_event_uuid : 62940263-b495-4f7e-b0e8-578c7307f13d, previous_auto_mr_merged : { id : 34, project_id : 1, mr_number : 34, title : [ucascade] Auto MR: 'main/1.2.x' -&gt; 'main/1.3.x' (!29), description : Automatic cascade merge request: `test` !29 --&gt; `main/1.2.x` --&gt; `main/1.3.x`, state : opened, detailed_merge_status : mergeable, has_conflicts : false, source_branch : mr29_main/1.2.x, target_branch : main/1.3.x, web_url : https://gitlab.example.com/root/some-project/-/merge_requests/34, ucascade_state : MERGED }, created_auto_mr : { id : 38, project_id : 1, mr_number : 38, assignee_ids : [ 40 ], title : [ucascade] Auto MR: 'main/1.3.x' -&gt; 'develop' (!25), description : Automatic cascade merge request: `test` !24 --&gt; `main/1.2.x` !25 --&gt; `main/1.3.x` --&gt; develop, state : opened, detailed_merge_status : broken_status, has_conflicts : true, source_branch : mr25_main/1.3.x, target_branch : main, web_url : https://gitlab.example.com/root/some-project/-/merge_requests/38, ucascade_state : NOT_MERGED_CONFLICTS }, existing_branch_deleted : { branch_name : mr21_main/1.2.x } } Since GitLab keeps the response obtained when delivering a webhook event and displays it in the webhook admin page, using this endpoint might be interesting for debugging purpose. Replay endpoint An additional endpoint is available to trigger the process using some simplified input compared to the merge-request event body sent by the GitLab Webhook API. In this simplified input, the start_commit_sha may correspond to two different things in original merge-request event: To the merge_commit_sha , in case the merge created a merge commit To the last_commit.id in case the fast-forward merge strategy is used (no merge commit) POST &lt;server url&gt;/ucascade/replay Body: { project_id : 23, mr_number : 122, user_id : 9382, source_branch : feature/1.3.x/some-change, target_branch : main/1.3.x, mr_state : merged, start_commit_sha : 0c6f9d312b924bff313f60db2f269b5f4901cd95, mr_action : merge, gitlab_event_uuid : replay-394720 } The response is the same as in the blocking case. Using this endpoint is interesting to trigger again the ucascade action for a given event using curl , without having to send the complete webhook event body. Readiness and liveness probes The application provides standard probes: &lt;server url&gt;/q/health/live : The application is up and running (liveness). &lt;server url&gt;/q/health/ready : The application is ready to serve requests (readiness). &lt;server url&gt;/q/health : Accumulating all health check procedures in the application. "
+    "title": "Build",
+    "text": " Table of Contents Build Running the application locally Packaging the application Build a docker image Run the docker image Build Please refer to the Quarkus documentation for more details. Running the application locally You can run your application in dev mode that enables live coding using: ./gradlew --console=PLAIN quarkusDev This will start the application is dev mode, available on port 8080 . For more details check the Quarkus Gradle Tooling page. Packaging the application The application can be packaged using: ./gradlew build It produces the quarkus-run.jar file in the build/quarkus-app/ directory. Be aware that it’s not an über-jar as the dependencies are copied into the build/quarkus-app/lib/ directory. The application is now runnable using java -jar build/quarkus-app/quarkus-run.jar . If you want to build an über-jar , execute the following command: ./gradlew build -Dquarkus.package.type=uber-jar The application, packaged as an über-jar , is now runnable using java -jar build/ucascade-&lt;version&gt;-runner.jar . Build a docker image ./gradlew build \ -Dquarkus.container-image.build=true \ -Dquarkus.container-image.push=true \ -Dquarkus.container-image.registry=&lt;registry name&gt; \ -Dquarkus.container-image.group=&lt;image path&gt; \ -Dquarkus.container-image.name=&lt;image name&gt; \ -Dquarkus.container-image.username=&lt;registry username&gt; \ -Dquarkus.container-image.password=&lt;registry password&gt; Run the docker image docker run -p 8080:8080 -e GITLAB_API_TOKEN=glpat-rXzx1n17cqUnmo437XSf &lt;ucascade image name&gt; The server is running on the 8080 port. "
 },
 
 {
-    "id": 4,
+    "id": 2,
+    "uri": "tech-docs/11_ucascade-configuration-file.html",
+    "menu": "tech-docs",
+    "title": "Configuration File",
+    "text": " Table of Contents Configuration file Configuration file The branches of interest, and the direction and order of the consecutive automatic merges, is configured in the JSON file ucascade.json . This file must be present in the root directory of the repository. Example: { branches : [ { sourceBranchPattern : main/1\\.2\\.x, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x, targetBranch : main/2.0.x }, { sourceBranchPattern : main/2\\.0\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/2.0.x } ] } "
+},
+
+{
+    "id": 3,
     "uri": "tech-docs/10_setup.html",
     "menu": "tech-docs",
     "title": "Setup",
@@ -41,7 +33,7 @@ var documents = [
 },
 
 {
-    "id": 5,
+    "id": 4,
     "uri": "tech-docs/index.html",
     "menu": "tech-docs",
     "title": "Introduction",
@@ -49,11 +41,19 @@ var documents = [
 },
 
 {
-    "id": 6,
+    "id": 5,
     "uri": "tech-docs/40_unit-test-example-files.html",
     "menu": "tech-docs",
     "title": "Unit test files",
     "text": " Table of Contents Unit test example files Unit test example files When the unit tests are running, the GitLab server is mocked. Wiremock is serving example responses from the src/test/resources/gitlab_template_json folder. Those files can be generated by the code in the ResetTestExampleFilesMain class. Adjust the location of the GitLab server ( URL constant). It can be a local GitLab instance or a remote one like gitlab.com. Adjust the access token ( TOKEN constant) The Webhook event is received on a server running on localhost:9999 (started by ResetTestExampleFilesMain ). If this server is not accessible by GitLab, start a tool like ngrok (with ngrok http 9999 ) and adjust the hook server value ( HOOK_URL constant) If you decide to use http://localhost:9999 for HOOK_URL (without ngrok), then you might need to change a setting in your local GitLab instance (see Allow webhook and service requests to local network ). If your gitlab instance is running in a docker container, be sure to run ResetTestExampleFilesMain in docker as well or make the host network available for the containers. "
+},
+
+{
+    "id": 6,
+    "uri": "tech-docs/20_endpoints.html",
+    "menu": "tech-docs",
+    "title": "Endpoints",
+    "text": " Table of Contents Endpoints Main endpoint Blocking endpoint Replay endpoint Readiness and liveness probes Endpoints Main endpoint POST &lt;server url&gt;/ucascade/merge-request This is the principal endpoint, that receive the Merge Request Webhook event sent by GitLab. Requests are processed asynchronously, meaning that GitLab will receive a 202 Accepted response back immediately. Example: { build_commit : 6af21ad, build_timestamp : 2022-01-01T07:21:58.378413Z, gitlab_event_uuid : 62940263-b495-4f7e-b0e8-578c7307f13d } build_commit and build_timestamp allow you to identify the ucascade version. gitlab_event_uuid is the value received in the X-Gitlab-Event-UUID header. Blocking endpoint A secondary endpoint where the process in done in a blocking way is available as well: POST &lt;server url&gt;/ucascade/merge-request-blocking With this blocking endpoint the different actions made by ucascade (see Technical documentation ) are visible in the returned response. Example: { build_commit : 6af21ad, build_timestamp : 2022-01-01T07:21:58.378413Z, gitlab_event_uuid : 62940263-b495-4f7e-b0e8-578c7307f13d, previous_auto_mr_merged : { id : 34, project_id : 1, mr_number : 34, title : [ucascade] Auto MR: 'main/1.2.x' -&gt; 'main/1.3.x' (!29), description : Automatic cascade merge request: `test` !29 --&gt; `main/1.2.x` --&gt; `main/1.3.x`, state : opened, detailed_merge_status : mergeable, has_conflicts : false, source_branch : mr29_main/1.2.x, target_branch : main/1.3.x, web_url : https://gitlab.example.com/root/some-project/-/merge_requests/34, ucascade_state : MERGED }, created_auto_mr : { id : 38, project_id : 1, mr_number : 38, assignee_ids : [ 40 ], title : [ucascade] Auto MR: 'main/1.3.x' -&gt; 'develop' (!25), description : Automatic cascade merge request: `test` !24 --&gt; `main/1.2.x` !25 --&gt; `main/1.3.x` --&gt; develop, state : opened, detailed_merge_status : broken_status, has_conflicts : true, source_branch : mr25_main/1.3.x, target_branch : main, web_url : https://gitlab.example.com/root/some-project/-/merge_requests/38, ucascade_state : NOT_MERGED_CONFLICTS }, existing_branch_deleted : { branch_name : mr21_main/1.2.x } } Since GitLab keeps the response obtained when delivering a webhook event and displays it in the webhook admin page, using this endpoint might be interesting for debugging purpose. Replay endpoint An additional endpoint is available to trigger the process using some simplified input compared to the merge-request event body sent by the GitLab Webhook API. In this simplified input, the start_commit_sha may correspond to two different things in original merge-request event: To the merge_commit_sha , in case the merge created a merge commit To the last_commit.id in case the fast-forward merge strategy is used (no merge commit) POST &lt;server url&gt;/ucascade/replay Body: { project_id : 23, mr_number : 122, user_id : 9382, source_branch : feature/1.3.x/some-change, target_branch : main/1.3.x, mr_state : merged, start_commit_sha : 0c6f9d312b924bff313f60db2f269b5f4901cd95, mr_action : merge, gitlab_event_uuid : replay-394720 } The response is the same as in the blocking case. Using this endpoint is interesting to trigger again the ucascade action for a given event using curl , without having to send the complete webhook event body. Readiness and liveness probes The application provides standard probes: &lt;server url&gt;/q/health/live : The application is up and running (liveness). &lt;server url&gt;/q/health/ready : The application is ready to serve requests (readiness). &lt;server url&gt;/q/health : Accumulating all health check procedures in the application. "
 },
 
 {
@@ -66,18 +66,18 @@ var documents = [
 
 {
     "id": 8,
-    "uri": "user-docs/index.html",
-    "menu": "user-docs",
-    "title": "Introduction",
-    "text": " Table of Contents User documentation User documentation This section describes the MultiMain Git workflow and how to use the tool . "
-},
-
-{
-    "id": 9,
     "uri": "user-docs/multi-main.html",
     "menu": "user-docs",
     "title": "MultiMain",
     "text": " Table of Contents MultiMain Git branching model One main branch per maintained version stream Making a change to multiple versions Important points Tooling support Appendix MultiMain Git branching model The MultiMain Git branching model is useful for teams maintaining multiple versions of a project concurrently over a long time period (months or years). It is similar to the git-flow branching model. One main branch per maintained version stream In the MultiMain branching model, you have one main branch per maintained version stream. Imagine you support patch releases for: version stream 1.2.x released versions in this stream: 1.2.0 , 1.2.1 , 1.2.2 &#8230;&#8203; 1.2.13 , 1.2.14 , &#8230;&#8203; version stream 1.3.x released versions in this stream: 1.3.0 &#8230;&#8203; 1.3.6 , 1.3.7 , 1.3.8 &#8230;&#8203; Version stream 1.2.x Released versions in this stream: 1.2.0 , 1.2.1 , 1.2.2 ,&#8230;&#8203;, 1.2.13 , 1.2.14 ,&#8230;&#8203; Version stream 1.3.x Released versions in this stream: 1.3.0 ,&#8230;&#8203;, 1.3.6 , 1.3.7 , 1.3.8 &#8230;&#8203; At the same time, you&#8217;re preparing the next major version 2.0.0 , with its own dedicated stream 2.0.x . This results in three main branches ( main/1.2.x , main/1.3.x , and main/2.0.x ), each corresponding to a different version stream. The naming pattern main/&lt;stream&gt; , where &lt;stream&gt; is the name of the stream, is fairly common in such cases. The &lt;stream&gt; part of branch names is a matter of project organization. If you work with a major.minor.patch version pattern, but maintain only one version per major version (version 2 , version 3 , version 4 and so on), the streams may be called 2.x.x , 3.x.x , or 4.x.x . In that case, the branches might be named: main/2.x.x main/3.x.x main/4.x.x You could also drop the x.x suffix and only use: main/2 main/3 main/4 Which naming convention you end up using is up to your team. Making a change to multiple versions Some Git flows, such as the GitLab flow , recommend developing on the main branch and cherry-picking relevant changes to the branches corresponding to older maintained versions. In the MultiMain flow, you alway do the change first the oldest version you are supporting ( main/1.2.x in the example) and you apply the same change through all the branches corresponding to the branches you are supporting. The key advantage of this flow is that it&#8217;s designed toensure the change is applied everywhere. It eliminates the risk that someone forgets to cherry-pick a commit. Additionally, you only have to solve potential merge conflicts once, when applying the change the first time, and not every time you cherry-pick a commit to an older branch. You can define that the developer who makes the change must apply their change to all branches. When you work with cherry-picking, it&#8217;s often up to the build engineer to backport changes. Important points Always merge forward It can happen that a change is only relevant for older branches and not for the newer versions (because the feature fixed on an older branch no longer exists in the newer version). Sometimes, a change is only relevant for older branches, for example because the feature fixed on an older branch no longer exists in newer versions. In such cases, you must still merge through the different branches with an empty merge commit. In the diagram below, the feature corresponding to the commits f1 and f2 is no longer present in version 2.0.x and should only be merged into the branch main/1.3.x : To make sure the branch feature/1.3.x/some-change is only merged into main/1.3.x , after having created the first merge commit m , check out the branch main/2.0.x and run the following command: git merge -s ours main/1.3.x This way the developer doing the next change on an older version will not have any conflict or unfinished merge problems when he tries to cascade his change through the branches. Bottleneck If there is a conflict between 2 main branches when cascading a given change, this can create a bottleneck (the subsequent changes that should also be cascaded are stuck). It might take time to solve the conflicts to create the merge commit that correspond to the cascade of the change. The solution to this problem is to work with two feature branches: A second branch feature/2.0.x/some-change , branched from main/2.0.x is created. The branch feature/1.3.x/some-change is merged into feature/2.0.x/some-change (this creates commit f3 ) Once the 2 features branches are ready (it doesn&#8217;t matter how much time it takes to have everything looking good). Two merge requests can be opened for each feature branch: First feature/2.0.x/some-change is merged to main/2.0.x Then feature/1.3.x/some-change is merge to main/1.3.x which can be directly cascaded to main/2.0.x since the conflict was already resolved with the first merge request. Tooling support Bitbucket See Bitbucket&#8217;s automatic branch merging feature. GitLab This project implements the MultiMain branching model for GitLab. The ucascade tool creates the necessary follow-up merge requests when an initial merge request is merged into a main branch. Appendix Legacy naming Some projects more in line with the git-flow terminology give their main branches different names: release/1.2.x release/1.3.x develop (for the version 2.0.x ) Only the names of the branches differ, but the idea is the same. Having a different name for develop doesn´t provide any benefits, since it&#8217;s no different from the other “release” branches. Also, occasional contributors to a project may find it difficult to determine which version the develop branch corresponds to. "
+},
+
+{
+    "id": 9,
+    "uri": "user-docs/index.html",
+    "menu": "user-docs",
+    "title": "Introduction",
+    "text": " Table of Contents User documentation User documentation This section describes the MultiMain Git workflow and how to use the tool . "
 },
 
 {
