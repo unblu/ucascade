@@ -194,8 +194,8 @@ public class GitLabService {
 					Log.infof("GitlabEvent: '%s' | Found auto merge request between '%s' and '%s' - iid: '%s', mergeWhenPipelineSucceeds: '%s'", gitlabEventUUID, prevSourceBranch, sourceBranch, mr.getIid(), mr.getMergeWhenPipelineSucceeds());
 					if (mr.getMergeWhenPipelineSucceeds() == Boolean.FALSE) {
 						if (mr.getHasConflicts() != null && mr.getHasConflicts()) {
-							//wait 5 seconds in order for GitLab to have time to update the merge request status
-							sleepSeconds(5);
+							// wait some seconds in order for GitLab to have time to update the merge request status
+							sleepSeconds(30);
 							mr = getExistingMr(gitlabEventUUID, mr);
 						}
 						MergeRequestResult mrResult = acceptAutoMergeRequest(gitlabEventUUID, mr);
