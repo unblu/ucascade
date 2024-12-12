@@ -318,7 +318,7 @@ public class GitLabService {
 			descriptionBuilder.append("\n");
 			descriptionBuilder.append("\n");
 			String prevDescription = cascadedMrs.firstEntry().getValue().getDescription();
-			if (prevDescription.isBlank()) {
+			if (prevDescription == null || prevDescription.isBlank()) {
 				descriptionBuilder.append("_No description_");
 			} else {
 				descriptionBuilder.append(prevDescription);
