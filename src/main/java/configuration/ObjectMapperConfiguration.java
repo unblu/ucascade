@@ -1,7 +1,7 @@
 package configuration;
 
-import javax.enterprise.inject.Instance;
-import javax.inject.Singleton;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Singleton;
 
 import org.gitlab4j.api.utils.JacksonJson;
 

@@ -16,7 +16,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
-import org.gitlab4j.api.Constants.StateEvent;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.AcceptMergeRequestParams;
@@ -28,6 +27,7 @@ import org.gitlab4j.api.models.ProjectHook;
 import org.gitlab4j.api.models.RepositoryFile;
 import org.gitlab4j.api.models.User;
 import org.gitlab4j.api.models.Visibility;
+import org.gitlab4j.models.Constants.StateEvent;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -317,13 +317,12 @@ public class ResetTestExampleFilesMain {
 			file.setFilePath(filePath);
 			if (fileContent == null) {
 				gitLabApi.getRepositoryFileApi().createFile(project, file, "main", "Create '" + filePath + "' file");
-				//the response does not contains the commit ref, query the branch again
-				Branch branch = gitLabApi.getRepositoryApi().getBranch(project, "main");
-				return branch.getCommit().getId();
 			} else {
-				RepositoryFile f = gitLabApi.getRepositoryFileApi().updateFile(project, file, "main", "Update '" + file + "' file");
-				return f.getRef();
+				gitLabApi.getRepositoryFileApi().updateFile(project, file, "main", "Update '" + file + "' file");
 			}
+			//the response does not contains the commit ref, query the branch again
+			Branch branch = gitLabApi.getRepositoryApi().getBranch(project, "main");
+			return branch.getCommit().getId();
 		}
 		return commitSha;
 	}

@@ -5,9 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.gitlab4j.api.Constants.MergeRequestState;
 import org.gitlab4j.api.utils.JacksonJson;
 import org.gitlab4j.api.webhook.MergeRequestEvent;
+import org.gitlab4j.models.Constants.MergeRequestState;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

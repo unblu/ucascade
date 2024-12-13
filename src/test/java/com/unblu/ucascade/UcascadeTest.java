@@ -24,10 +24,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.MergeRequest;
 import org.gitlab4j.api.utils.JacksonJson;
 import org.gitlab4j.api.utils.UrlEncoder;
@@ -941,56 +940,40 @@ class UcascadeTest {
 	}
 
 	private void setupGetBranchStub(Long projectId, String branchName, Map<String, Object> customProperties) {
-		try {
-			wireMockServer.stubFor(
-					get(urlPathEqualTo(API_PREFIX + "projects/" + projectId + "/repository/branches/" + UrlEncoder.urlEncode(branchName)))
-							.withHeader(API_AUTH_KEY_NAME, WireMock.equalTo(apiToken))
-							.willReturn(aResponse()
-									.withHeader("Content-Type", "application/json")
-									.withBody(GitlabMockUtil.get(GitlabAction.GET_BRANCH, customProperties))));
-		} catch (GitLabApiException e) {
-			e.printStackTrace();
-		}
+		wireMockServer.stubFor(
+				get(urlPathEqualTo(API_PREFIX + "projects/" + projectId + "/repository/branches/" + UrlEncoder.urlEncode(branchName)))
+						.withHeader(API_AUTH_KEY_NAME, WireMock.equalTo(apiToken))
+						.willReturn(aResponse()
+								.withHeader("Content-Type", "application/json")
+								.withBody(GitlabMockUtil.get(GitlabAction.GET_BRANCH, customProperties))));
 	}
 
 	private void setupGetBranchStubNotFound(Long projectId, String branchName) {
-		try {
-			wireMockServer.stubFor(
-					get(urlPathEqualTo(API_PREFIX + "projects/" + projectId + "/repository/branches/" + UrlEncoder.urlEncode(branchName)))
-							.withHeader(API_AUTH_KEY_NAME, WireMock.equalTo(apiToken))
-							.willReturn(aResponse()
-									.withStatus(404)
-									.withHeader("Content-Type", "application/json")
-									.withBody("{\"message\":\"404 Branch Not Found\"}")));
-		} catch (GitLabApiException e) {
-			e.printStackTrace();
-		}
+		wireMockServer.stubFor(
+				get(urlPathEqualTo(API_PREFIX + "projects/" + projectId + "/repository/branches/" + UrlEncoder.urlEncode(branchName)))
+						.withHeader(API_AUTH_KEY_NAME, WireMock.equalTo(apiToken))
+						.willReturn(aResponse()
+								.withStatus(404)
+								.withHeader("Content-Type", "application/json")
+								.withBody("{\"message\":\"404 Branch Not Found\"}")));
 	}
 
 	private void setupDeleteBranchStubNotFound(Long projectId, String branchName) {
-		try {
-			wireMockServer.stubFor(
-					delete(urlPathEqualTo(API_PREFIX + "projects/" + projectId + "/repository/branches/" + UrlEncoder.urlEncode(branchName)))
-							.withHeader(API_AUTH_KEY_NAME, WireMock.equalTo(apiToken))
-							.willReturn(aResponse()
-									.withStatus(404)
-									.withHeader("Content-Type", "application/json")
-									.withBody("{\"message\":\"404 Branch Not Found\"}")));
-		} catch (GitLabApiException e) {
-			e.printStackTrace();
-		}
+		wireMockServer.stubFor(
+				delete(urlPathEqualTo(API_PREFIX + "projects/" + projectId + "/repository/branches/" + UrlEncoder.urlEncode(branchName)))
+						.withHeader(API_AUTH_KEY_NAME, WireMock.equalTo(apiToken))
+						.willReturn(aResponse()
+								.withStatus(404)
+								.withHeader("Content-Type", "application/json")
+								.withBody("{\"message\":\"404 Branch Not Found\"}")));
 	}
 
 	private void setupDeleteBranchStubOk(Long projectId, String branchName) {
-		try {
-			wireMockServer.stubFor(
-					delete(urlPathEqualTo(API_PREFIX + "projects/" + projectId + "/repository/branches/" + UrlEncoder.urlEncode(branchName)))
-							.withHeader(API_AUTH_KEY_NAME, WireMock.equalTo(apiToken))
-							.willReturn(aResponse()
-									.withStatus(204)));
-		} catch (GitLabApiException e) {
-			e.printStackTrace();
-		}
+		wireMockServer.stubFor(
+				delete(urlPathEqualTo(API_PREFIX + "projects/" + projectId + "/repository/branches/" + UrlEncoder.urlEncode(branchName)))
+						.withHeader(API_AUTH_KEY_NAME, WireMock.equalTo(apiToken))
+						.willReturn(aResponse()
+								.withStatus(204)));
 	}
 
 	private void setupCreateMergeRequestStub(Long projectId, Map<String, Object> customProperties) {
@@ -1054,17 +1037,13 @@ class UcascadeTest {
 	}
 
 	private void setupGetFileFromRepositoryRequestStub(Long projectId, String filePath, String ref) {
-		try {
-			wireMockServer.stubFor(
-					get(urlPathEqualTo(API_PREFIX + "projects/" + projectId + "/repository/files/" + UrlEncoder.urlEncode(filePath)))
-							.withHeader(API_AUTH_KEY_NAME, WireMock.equalTo(apiToken))
-							.withQueryParam("ref", WireMock.equalTo(ref))
-							.willReturn(aResponse()
-									.withHeader("Content-Type", "application/json")
-									.withBody(GitlabMockUtil.get(GitlabAction.GET_FILE, null))));
-		} catch (GitLabApiException e) {
-			e.printStackTrace();
-		}
+		wireMockServer.stubFor(
+				get(urlPathEqualTo(API_PREFIX + "projects/" + projectId + "/repository/files/" + UrlEncoder.urlEncode(filePath)))
+						.withHeader(API_AUTH_KEY_NAME, WireMock.equalTo(apiToken))
+						.withQueryParam("ref", WireMock.equalTo(ref))
+						.willReturn(aResponse()
+								.withHeader("Content-Type", "application/json")
+								.withBody(GitlabMockUtil.get(GitlabAction.GET_FILE, null))));
 	}
 
 	private void setupGetMRPipelinesRequestStub(Long projectId, Long mrId, boolean hasPipelines) {
