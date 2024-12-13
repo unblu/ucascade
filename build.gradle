@@ -6,7 +6,7 @@ plugins {
 }
 
 wrapper {
-    gradleVersion = '7.5.1'
+    gradleVersion = '8.10.1'
 }
 
 repositories {
