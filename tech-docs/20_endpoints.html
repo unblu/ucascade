@@ -257,6 +257,7 @@
 <li><a href="#_blocking_endpoint">Blocking endpoint</a></li>
 <li><a href="#_replay_endpoint">Replay endpoint</a></li>
 <li><a href="#_readiness_and_liveness_probes">Readiness and liveness probes</a></li>
+<li><a href="#_info_endpoint">Info endpoint</a></li>
 </ul>
 </li>
 </ul>
@@ -441,6 +442,22 @@
 <p><code>&lt;server url&gt;/q/health</code>: Accumulating all health check procedures in the application.</p>
 </li>
 </ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_info_endpoint">Info endpoint</h3>
+<div class="paragraph">
+<p>The application provides some information about the current version:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>&lt;server url&gt;/q/info</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This can be turned off with the quarkus configuration property <code>quarkus.info.enabled</code> set to <code>false</code>.</p>
 </div>
 </div>
 </div>
