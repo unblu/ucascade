@@ -67,3 +67,11 @@ The application provides standard probes:
 * `<server url>/q/health/live`: The application is up and running (liveness).
 * `<server url>/q/health/ready`: The application is ready to serve requests (readiness).
 * `<server url>/q/health`: Accumulating all health check procedures in the application.
+
+=== Info endpoint
+
+The application provides some information about the current version:
+
+* `<server url>/q/info`
+
+This can be turned off with the quarkus configuration property `quarkus.info.enabled` set to `false`.

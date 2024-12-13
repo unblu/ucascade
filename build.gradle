@@ -15,6 +15,7 @@ repositories {
 
 dependencies {
     implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+    implementation 'io.quarkus:quarkus-info'
     implementation 'io.quarkus:quarkus-reactive-routes'
     implementation 'io.quarkus:quarkus-smallrye-health'
     implementation 'io.quarkus:quarkus-container-image-jib'
@@ -55,37 +56,4 @@ spotless {
     // available versions are: https://github.com/diffplug/spotless/tree/master/lib-extra/src/main/resources/com/diffplug/spotless/extra/eclipse_jdt_formatter
     eclipse('4.21.0').configFile('.settings/org.eclipse.jdt.core.prefs')
   }
-}
-
-def genOutputDir = file("$buildDir/generated/main-resources")
-
-def generateMainResourcesTask = tasks.register('generateMainResources') {
-    def generatedFile = new File(genOutputDir, "application.properties")
-    outputs.file(generatedFile)
-
-    doLast {
-        generatedFile.text = """
-gitlab.host=https://gitlab.com
-quarkus.container-image.tag=latest
-
-build.commit=${grgit.head().abbreviatedId}
-build.timestamp=${java.time.Instant.now().toString()}
-
-quarkus.index-dependency.gitlab4j-api.group-id=org.gitlab4j
-quarkus.index-dependency.gitlab4j-api.artifact-id=gitlab4j-api
-
-quarkus.index-dependency.gitlab4j-models.group-id=org.gitlab4j
-quarkus.index-dependency.gitlab4j-models.artifact-id=gitlab4j-models
-
-%dev.quarkus.log.console.google=false
-%test.quarkus.log.console.google=false
-"""
-    }
-}
-
-sourceSets.main.resources.srcDir(genOutputDir)
-model {
-    tasks.processResources {
-        dependsOn generateMainResourcesTask
-    }
 }
