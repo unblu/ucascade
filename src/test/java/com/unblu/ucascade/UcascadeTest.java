@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -46,6 +47,8 @@ import com.unblu.ucascade.util.GitlabMockUtil.GitlabAction;
 
 import controller.model.MergeRequestSimple;
 import controller.model.MergeRequestUcascadeState;
+import io.quarkus.info.BuildInfo;
+import io.quarkus.info.GitInfo;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import service.GitLabService;
@@ -66,6 +69,12 @@ class UcascadeTest {
 	Optional<String> apiTokenApprover;
 
 	String branchModelContent;
+
+	@Inject
+	GitInfo gitInfo;
+
+	@Inject
+	BuildInfo buildInfo;
 
 	@BeforeEach
 	void init() throws IOException {
@@ -88,8 +97,8 @@ class UcascadeTest {
 				.body(startsWith("{\n"))
 				.body(endsWith("\n}"))
 				.body("gitlab_event_uuid", equalTo(GitlabMockUtil.GITLAB_EVENT_UUID))
-				.body("build_commit", equalTo("6af21ad"))
-				.body("build_timestamp", equalTo("2022-01-01T07:21:58.378413Z"));
+				.body("build_commit", equalTo(expectedBuildCommitValue()))
+				.body("build_timestamp", equalTo(expectedBuildTimestampValue()));
 
 		verifyRequests(13);
 	}
@@ -116,8 +125,8 @@ class UcascadeTest {
 				.body(startsWith("{\n"))
 				.body(endsWith("\n}"))
 				.body("gitlab_event_uuid", equalTo(GitlabMockUtil.GITLAB_EVENT_UUID))
-				.body("build_commit", equalTo("6af21ad"))
-				.body("build_timestamp", equalTo("2022-01-01T07:21:58.378413Z"))
+				.body("build_commit", equalTo(expectedBuildCommitValue()))
+				.body("build_timestamp", equalTo(expectedBuildTimestampValue()))
 				.body("created_auto_mr.title", equalTo(expectedTitle))
 				.body("created_auto_mr.description", equalTo(expectedDescription))
 				.body("created_auto_mr.mr_number", equalTo(mrNumber.intValue()))
@@ -151,8 +160,8 @@ class UcascadeTest {
 				.body(startsWith("{\n"))
 				.body(endsWith("\n}"))
 				.body("gitlab_event_uuid", equalTo(GitlabMockUtil.GITLAB_EVENT_UUID))
-				.body("build_commit", equalTo("6af21ad"))
-				.body("build_timestamp", equalTo("2022-01-01T07:21:58.378413Z"))
+				.body("build_commit", equalTo(expectedBuildCommitValue()))
+				.body("build_timestamp", equalTo(expectedBuildTimestampValue()))
 				.body("created_auto_mr.title", equalTo(expectedTitle))
 				.body("created_auto_mr.description", equalTo(expectedDescription))
 				.body("created_auto_mr.mr_number", equalTo(mrNumber.intValue()))
@@ -803,8 +812,8 @@ class UcascadeTest {
 				.body(startsWith("{\n"))
 				.body(endsWith("\n}"))
 				.body("gitlab_event_uuid", nullValue())
-				.body("build_commit", equalTo("6af21ad"))
-				.body("build_timestamp", equalTo("2022-01-01T07:21:58.378413Z"))
+				.body("build_commit", equalTo(expectedBuildCommitValue()))
+				.body("build_timestamp", equalTo(expectedBuildTimestampValue()))
 				.body("error", startsWith("Could not resolve subtype of"));
 
 		verifyRequests(0);
@@ -828,8 +837,8 @@ class UcascadeTest {
 				.body(startsWith("{\n"))
 				.body(endsWith("\n}"))
 				.body("gitlab_event_uuid", equalTo("test-1289369"))
-				.body("build_commit", equalTo("6af21ad"))
-				.body("build_timestamp", equalTo("2022-01-01T07:21:58.378413Z"))
+				.body("build_commit", equalTo(expectedBuildCommitValue()))
+				.body("build_timestamp", equalTo(expectedBuildTimestampValue()))
 				.body("error", equalTo("Invalid path: /foo"));
 
 		verifyRequests(0);
@@ -926,6 +935,14 @@ class UcascadeTest {
 
 	private boolean isGetUserStub(StubMapping stub) {
 		return Objects.equals("/api/v4/user", stub.getRequest().getUrlPath());
+	}
+
+	private String expectedBuildCommitValue() {
+		return gitInfo.latestCommitId().substring(7);
+	}
+
+	private String expectedBuildTimestampValue() {
+		return buildInfo.time().toString();
 	}
 
 	private void setupCreateBranchStub(Long projectId, String branch, String ref, Map<String, Object> customProperties) {

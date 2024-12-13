@@ -35,6 +35,8 @@ import controller.model.DeleteBranchResult;
 import controller.model.MergeRequestResult;
 import controller.model.MergeRequestSimple;
 import controller.model.MergeRequestUcascadeState;
+import io.quarkus.info.BuildInfo;
+import io.quarkus.info.GitInfo;
 import io.quarkus.logging.Log;
 import io.quarkus.vertx.ConsumeEvent;
 import io.smallrye.common.annotation.Blocking;
@@ -58,11 +60,11 @@ public class GitLabService {
 	@ConfigProperty(name = "gitlab.api.token.approver")
 	Optional<String> apiTokenApprover;
 
-	@ConfigProperty(name = "build.commit", defaultValue = "n/a")
-	String buildCommit;
+	@Inject
+	GitInfo gitInfo;
 
-	@ConfigProperty(name = "build.timestamp", defaultValue = "n/a")
-	String buildTimestamp;
+	@Inject
+	BuildInfo buildInfo;
 
 	private static final String UCASCADE_CONFIGURATION_FILE = "ucascade.json";
 	private static final String UCASCADE_TAG = "[ucascade]";
@@ -108,8 +110,8 @@ public class GitLabService {
 	public CascadeResult createResult(String gitlabEventUUID) {
 		CascadeResult result = new CascadeResult();
 		result.setGitlabEventUUID(gitlabEventUUID);
-		result.setBuildCommit(buildCommit);
-		result.setBuildTimestamp(buildTimestamp);
+		result.setBuildCommit(gitInfo.latestCommitId().substring(7));
+		result.setBuildTimestamp(buildInfo.time().toString());
 		return result;
 	}
 
