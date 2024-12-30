@@ -20,7 +20,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-smallrye-health'
     implementation 'io.quarkus:quarkus-container-image-jib'
     implementation 'io.quarkus:quarkus-arc'
-    implementation 'org.gitlab4j:gitlab4j-api:6.0.0-rc.7'
+    implementation 'org.gitlab4j:gitlab4j-api:6.0.0-rc.8'
     implementation 'eu.mulk.quarkus-googlecloud-jsonlogging:quarkus-googlecloud-jsonlogging:6.0.0'
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
