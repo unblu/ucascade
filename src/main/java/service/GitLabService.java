@@ -218,6 +218,7 @@ public class GitLabService {
 			if (haveDiff(gitlabEventUUID, projectId, mergeSha, nextMainBranch)) {
 				String tmpBranchName = "mr" + mrNumber + "_" + sourceBranch;
 				createBranch(gitlabEventUUID, projectId, tmpBranchName, mergeSha);
+				sleepSeconds(5); // give Gitlab time to recognize newly created branch
 				MergeRequestResult mrResult = merge(gitlabEventUUID, projectId, sourceBranch, mrNumber, tmpBranchName, nextMainBranch);
 				result.setCreatedAutoMr(mrResult);
 			} else {
