@@ -10,18 +10,18 @@ var documents = [
 
 {
     "id": 1,
-    "uri": "tech-docs/11_ucascade-configuration-file.html",
-    "menu": "tech-docs",
-    "title": "Configuration File",
-    "text": " Table of Contents Configuration file Configuration file The branches of interest, and the direction and order of the consecutive automatic merges, is configured in the JSON file ucascade.json . This file must be present in the root directory of the repository. Example: { branches : [ { sourceBranchPattern : main/1\\.2\\.x, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x, targetBranch : main/2.0.x }, { sourceBranchPattern : main/2\\.0\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/2.0.x } ] } "
-},
-
-{
-    "id": 2,
     "uri": "tech-docs/50_build.html",
     "menu": "tech-docs",
     "title": "Build",
     "text": " Table of Contents Build Running the application locally Packaging the application Build a docker image Run the docker image Build Please refer to the Quarkus documentation for more details. Running the application locally You can run your application in dev mode that enables live coding using: ./gradlew --console=PLAIN quarkusDev This will start the application is dev mode, available on port 8080 . For more details check the Quarkus Gradle Tooling page. Packaging the application The application can be packaged using: ./gradlew build It produces the quarkus-run.jar file in the build/quarkus-app/ directory. Be aware that it’s not an über-jar as the dependencies are copied into the build/quarkus-app/lib/ directory. The application is now runnable using java -jar build/quarkus-app/quarkus-run.jar . If you want to build an über-jar , execute the following command: ./gradlew build -Dquarkus.package.type=uber-jar The application, packaged as an über-jar , is now runnable using java -jar build/ucascade-&lt;version&gt;-runner.jar . Build a docker image ./gradlew build \ -Dquarkus.container-image.build=true \ -Dquarkus.container-image.push=true \ -Dquarkus.container-image.registry=&lt;registry name&gt; \ -Dquarkus.container-image.group=&lt;image path&gt; \ -Dquarkus.container-image.name=&lt;image name&gt; \ -Dquarkus.container-image.username=&lt;registry username&gt; \ -Dquarkus.container-image.password=&lt;registry password&gt; Run the docker image docker run -p 8080:8080 -e GITLAB_API_TOKEN=glpat-rXzx1n17cqUnmo437XSf &lt;ucascade image name&gt; The server is running on the 8080 port. "
+},
+
+{
+    "id": 2,
+    "uri": "tech-docs/11_ucascade-configuration-file.html",
+    "menu": "tech-docs",
+    "title": "Configuration File",
+    "text": " Table of Contents Configuration file Configuration file The branches of interest, and the direction and order of the consecutive automatic merges, is configured in the JSON file ucascade.json . This file must be present in the root directory of the repository. Example: { branches : [ { sourceBranchPattern : main/1\\.2\\.x, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/1.3.x }, { sourceBranchPattern : main/1\\.3\\.x, targetBranch : main/2.0.x }, { sourceBranchPattern : main/2\\.0\\.x/[0-9]{4}\\.[0-9]{2}, targetBranch : main/2.0.x } ] } "
 },
 
 {
