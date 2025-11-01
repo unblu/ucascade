@@ -22,6 +22,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-arc'
     implementation 'org.gitlab4j:gitlab4j-api:6.0.0-rc.8'
     implementation 'eu.mulk.quarkus-googlecloud-jsonlogging:quarkus-googlecloud-jsonlogging:6.0.0'
+    implementation 'se.sawano.java:alphanumeric-comparator:2.0.0'
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.33.2'

@@ -28,6 +28,7 @@ import org.gitlab4j.api.models.Assignee;
 import org.gitlab4j.api.models.Branch;
 import org.gitlab4j.api.models.MergeRequest;
 import org.gitlab4j.api.models.MergeRequestParams;
+import org.gitlab4j.api.models.ProtectedBranch;
 import org.gitlab4j.models.Constants.MergeRequestState;
 
 import controller.model.CascadeResult;
@@ -35,12 +36,14 @@ import controller.model.DeleteBranchResult;
 import controller.model.MergeRequestResult;
 import controller.model.MergeRequestSimple;
 import controller.model.MergeRequestUcascadeState;
+import enums.MergeStrategy;
 import io.quarkus.info.BuildInfo;
 import io.quarkus.info.GitInfo;
 import io.quarkus.logging.Log;
 import io.quarkus.vertx.ConsumeEvent;
 import io.smallrye.common.annotation.Blocking;
 import io.vertx.mutiny.core.eventbus.EventBus;
+import se.sawano.java.text.AlphanumericComparator;
 import util.ConfigurationUtils;
 
 @ApplicationScoped
@@ -60,12 +63,16 @@ public class GitLabService {
 	@ConfigProperty(name = "gitlab.api.token.approver")
 	Optional<String> apiTokenApprover;
 
+	@ConfigProperty(name = "merge.strategy", defaultValue = "configuration_file")
+	MergeStrategy mergeStrategy;
+
 	@Inject
 	GitInfo gitInfo;
 
 	@Inject
 	BuildInfo buildInfo;
 
+	private static final String BRANCH_SEARCH_QUERY_PARAM_TEMPLATE = "^%s$";
 	private static final String UCASCADE_CONFIGURATION_FILE = "ucascade.json";
 	private static final String UCASCADE_TAG = "[ucascade]";
 	private static final String UCASCADE_BRANCH_PATTERN_PREFIX = "^mr(\\d+)_";
@@ -207,14 +214,8 @@ public class GitLabService {
 	}
 
 	private void createAutoMr(CascadeResult result, String gitlabEventUUID, Long projectId, String prevMrSourceBranch, String sourceBranch, Long mrNumber, String mergeSha) {
-		String branchModel = getBranchModelConfigurationFile(gitlabEventUUID, projectId, mergeSha);
-		String nextMainBranch = ConfigurationUtils.getNextTargetBranch(branchModel, sourceBranch);
-
+		String nextMainBranch = getNextTargetBranch(gitlabEventUUID, projectId, sourceBranch, mergeSha);
 		if (nextMainBranch != null) {
-			Branch branch = getBranch(gitlabEventUUID, projectId, nextMainBranch);
-			if (!Branch.isValid(branch)) {
-				throw new IllegalStateException(String.format("GitlabEvent: '%s' | Branch named '%s' does not exist in project '%d'. Please check the ucascade configuration file.", gitlabEventUUID, nextMainBranch, projectId));
-			}
 			if (haveDiff(gitlabEventUUID, projectId, mergeSha, nextMainBranch)) {
 				String tmpBranchName = "mr" + mrNumber + "_" + sourceBranch;
 				createBranch(gitlabEventUUID, projectId, tmpBranchName, mergeSha);
@@ -567,6 +568,77 @@ public class GitLabService {
 			return new String(Base64.getDecoder().decode(encodedContent));
 		} catch (GitLabApiException e) {
 			throw new IllegalStateException(String.format("GitlabEvent: '%s' | Configuration file '%s' not found in remote repository at '%s'", gitlabEventUUID, UCASCADE_CONFIGURATION_FILE, ref), e);
+		}
+	}
+
+	private String getNextTargetBranch(String gitlabEventUUID, Long projectId, String sourceBranch, String mergeSha) {
+		return switch (mergeStrategy) {
+		case CONFIGURATION_FILE -> getNextTargetBranchFromConfigurationFile(gitlabEventUUID, projectId, sourceBranch, mergeSha);
+		case PROTECTED_BRANCHES -> getNextTargetBranchFromProtectedBranches(gitlabEventUUID, projectId, sourceBranch, mergeSha);
+		};
+	}
+
+	private String getNextTargetBranchFromConfigurationFile(String gitlabEventUUID, Long projectId, String sourceBranch, String mergeSha) {
+		String branchModel = getBranchModelConfigurationFile(gitlabEventUUID, projectId, mergeSha);
+		String nextMainBranch = ConfigurationUtils.getNextTargetBranch(branchModel, sourceBranch);
+		String targetBranch = null;
+		if (nextMainBranch != null) {
+			Branch branch = getBranch(gitlabEventUUID, projectId, nextMainBranch);
+			if (!Branch.isValid(branch)) {
+				throw new IllegalStateException(String.format("GitlabEvent: '%s' | Branch named '%s' does not exist in projectId '%d'. Please check the ucascade configuration file.", gitlabEventUUID, nextMainBranch, projectId));
+			}
+			targetBranch = branch.getName();
+		}
+		return targetBranch;
+	}
+
+	private String getNextTargetBranchFromProtectedBranches(String gitlabEventUUID, Long projectId, String sourceBranch, String mergeSha) {
+		try {
+			List<ProtectedBranch> protectedBranches = gitlab.getProtectedBranchesApi().getProtectedBranches(projectId);
+			List<String> sortedProtectedBranchNames = protectedBranches.stream()
+					.map(ProtectedBranch::getName)
+					.sorted(new AlphanumericComparator())
+					.toList();
+			boolean sourceBranchFounded = false;
+			String targetBranch = null;
+			boolean withWildcardRules = protectedBranches.stream().anyMatch(pb -> pb.getName().contains("*"));
+			if (withWildcardRules) {
+				outerLoop: for (ProtectedBranch protectedBranch : protectedBranches) {
+					String search = BRANCH_SEARCH_QUERY_PARAM_TEMPLATE.formatted(protectedBranch.getName());
+					List<Branch> branches = gitlab.getRepositoryApi().getBranches(projectId, search);
+					List<String> sortedBranchNames = branches.stream()
+							.filter(Branch::isValid)
+							.map(Branch::getName)
+							.sorted(new AlphanumericComparator())
+							.toList();
+					for (String branch : sortedBranchNames) {
+						if (sourceBranchFounded) {
+							targetBranch = branch;
+							break outerLoop;
+						}
+						if (branch.equals(sourceBranch)) {
+							sourceBranchFounded = true;
+						}
+					}
+					sourceBranchFounded = false;
+				}
+			} else {
+				for (String protectedBranch : sortedProtectedBranchNames) {
+					Branch branch = gitlab.getRepositoryApi().getBranch(projectId, protectedBranch);
+					if (Branch.isValid(branch)) {
+						if (sourceBranchFounded) {
+							targetBranch = branch.getName();
+							break;
+						}
+						if (branch.getName().equals(sourceBranch)) {
+							sourceBranchFounded = true;
+						}
+					}
+				}
+			}
+			return targetBranch;
+		} catch (GitLabApiException e) {
+			throw new IllegalStateException(String.format("GitlabEvent: '%s' | Cannot retrieve protected branch '%s'", gitlabEventUUID, sourceBranch), e);
 		}
 	}
 
