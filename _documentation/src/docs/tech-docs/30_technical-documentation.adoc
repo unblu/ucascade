@@ -28,9 +28,10 @@ For a given merge request `merge` event, 3 different independent actions can be 
 
 * `previous_auto_mr_merged`: if the merged-request event corresponds to the merge of an auto merge-request, and some other auto-merge requests are open between the same two branches, then the oldest auto merge request is merged.
 * `created_auto_mr`: if the merged-request event corresponds to the merge of any merge request that requires an auto merge-request to be created (to cascade the change to the next branch), it is created and potentially directly merged. With the "blocking" and "replay" endpoints, the returned object contains a `created_auto_mr.ucascade_state` field indicating if the action was successful or why it was not. It can take the values of:
-    ** MERGED: MR was created and merged succesfully
+    ** MERGED: MR was created and merged successfully
     ** NOT_MERGED_CONFLICTS: MR was created but not merged due to existing conflicts between source and target branches that must be manually resolved
     ** NOT_MERGED_CONCURRENT_MRS: MR was created but not merged due to another existing open merge request between the same source and target branches
+    ** NOT_MERGED_MISSING_APPROVALS: MR was created but not merged because it did not receive the required approvals within the configured timeout period
     ** NOT_MERGED_UNKNOWN_REASON: MR was created but not merged due to an unknown/unexpected reason
 * `existing_branch_deleted`: if the merged-request event corresponds to the **merge** of an auto merge-request and the source branch is still present, it gets deleted.
 
@@ -61,6 +62,8 @@ This explains how ucascade determines if a new auto-merge request is created or 
 ----
 include::{diagramsdir}/technical-workflow.puml[]
 ----
+
+Before attempting to merge, `ucascade` waits for the merge request to receive the required approvals. This is useful when approvals may arrive shortly after the MR is created (e.g., via automated approval workflows). The waiting period is controlled by the `ucascade.max-retry-attempts` configuration property (see xref:10_setup.adoc[Setup]).
 
 During the final stage of the success case -- merging the MR -- `ucascade` verifies if that MR has any pipeline configured. If it has, the flag `merge_when_pipeline_succeeds` is set to `true`, meaning that the merge is only to happen after all its pipelines have finished successfully. Otherwise, if it doesn't have any pipeline, this flag is set to `false`, preventing GitLab to return a 405 error (see https://gitlab.com/gitlab-org/gitlab/-/issues/355455[issue #355455] for more details).
 

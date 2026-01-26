@@ -692,7 +692,7 @@ class UcascadeTest {
 				.body(endsWith("\n}"))
 				.body("created_auto_mr.ucascade_state", equalTo(MergeRequestUcascadeState.NOT_MERGED_MISSING_APPROVALS.name()));
 
-		verifyRequests(12);
+		verifyRequests(13);
 	}
 
 	@Test
