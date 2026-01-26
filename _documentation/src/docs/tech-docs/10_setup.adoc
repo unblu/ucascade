@@ -60,6 +60,14 @@ Specify the api token value used when ucascade is approving a merge-request thro
 * No default value.
 * If not set, `ucascade` will merge the merge-requests *without* approving them first. If set, `ucascade` will approve the merge-request using that value.
 
+==== Max retry attempts
+
+Specify the maximum number of retry attempts for operations that require waiting.
+
+* key: `ucascade.max-retry-attempts`
+* default value: `60`
+* Each retry waits 1 second before the next attempt, so a value of 60 means waiting up to 60 seconds.
+
 === GitLab: Webhook Setup
 
 In the corresponding repository or group configure a https://docs.gitlab.com/ee/user/project/integrations/webhooks.html[Webhook] pointing to the location where ucascade is available:
