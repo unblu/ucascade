@@ -404,7 +404,12 @@ public class GitLabService {
 		final Long mrNumber = mr.getIid();
 		final Long project = mr.getProjectId();
 
-		if (!isMergeRequestApproved(gitlabEventUUID, mr)) {
+		int countDownWaitingApprovals = MAX_RETRY_ATTEMPTS;
+		while (!isMergeRequestApproved(gitlabEventUUID, mr) && countDownWaitingApprovals-- > 0) {
+			Log.infof("GitlabEvent: '%s' | Waiting for approvals in MR '!%d' in project '%d'. Retrying... %d", gitlabEventUUID, mrNumber, project, Math.abs(countDownWaitingApprovals - MAX_RETRY_ATTEMPTS));
+			sleepSeconds(1);
+		}
+		if (countDownWaitingApprovals < 0) {
 			mr = assignMrToCascadeResponsible(gitlabEventUUID, mr);
 			Log.warnf("GitlabEvent: '%s' | Merge request '!%d' in project '%d' cannot be accepted because it does not have the required amount of approvals", gitlabEventUUID, mrNumber, project);
 			MergeRequestResult result = new MergeRequestResult(mr);
@@ -427,8 +432,8 @@ public class GitLabService {
 					.withMergeCommitMessage(String.format("%s Automatic merge: '%s' -> '%s'", UCASCADE_TAG, sourceBranchPretty, targetBranch))
 					.withShouldRemoveSourceBranch(mr.getForceRemoveSourceBranch());
 
-			int countDown = MAX_RETRY_ATTEMPTS;
-			while (state != MergeRequestUcascadeState.MERGED && countDown-- > 0) {
+			int countDownWaitingMerged = MAX_RETRY_ATTEMPTS;
+			while (state != MergeRequestUcascadeState.MERGED && countDownWaitingMerged-- > 0) {
 				boolean hasPipeline = hasPipeline(gitlabEventUUID, mr);
 				acceptMrParams.withMergeWhenPipelineSucceeds(hasPipeline);
 				Log.infof("GitlabEvent: '%s' | Merging MR '!%d': '%s' -> '%s' when pipeline succeeds: '%b'", gitlabEventUUID, mrNumber, sourceBranch, targetBranch, hasPipeline);
@@ -436,12 +441,12 @@ public class GitLabService {
 					mr = mrApi.acceptMergeRequest(project, mrNumber, acceptMrParams);
 					state = MergeRequestUcascadeState.MERGED;
 				} catch (GitLabApiException e) {
-					if (countDown == 0) {
+					if (countDownWaitingMerged == 0) {
 						Log.warnf(e, "GitlabEvent: '%s' | Cannot accept merge request '!%d' from '%s' into '%s' in project '%d'", gitlabEventUUID, mrNumber, sourceBranch, targetBranch, project);
 						state = MergeRequestUcascadeState.NOT_MERGED_UNKNOWN_REASON;
 						mr = assignMrToCascadeResponsible(gitlabEventUUID, mr);
 					} else {
-						Log.infof("GitlabEvent: '%s' | Merge failed for MR '!%d', status '%s'. Retrying... %d", gitlabEventUUID, mrNumber, mergeStatus, Math.abs(countDown - MAX_RETRY_ATTEMPTS));
+						Log.infof("GitlabEvent: '%s' | Merge failed for MR '!%d', status '%s'. Retrying... %d", gitlabEventUUID, mrNumber, mergeStatus, Math.abs(countDownWaitingMerged - MAX_RETRY_ATTEMPTS));
 						sleepSeconds(1);
 					}
 				}
