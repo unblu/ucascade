@@ -60,6 +60,9 @@ public class GitLabService {
 	@ConfigProperty(name = "gitlab.api.token.approver")
 	Optional<String> apiTokenApprover;
 
+	@ConfigProperty(name = "ucascade.max-retry-attempts", defaultValue = "60")
+	int maxRetryAttempts;
+
 	@Inject
 	GitInfo gitInfo;
 
@@ -70,7 +73,6 @@ public class GitLabService {
 	private static final String UCASCADE_TAG = "[ucascade]";
 	private static final String UCASCADE_BRANCH_PATTERN_PREFIX = "^mr(\\d+)_";
 	private static final String UCASCADE_BRANCH_PATTERN = UCASCADE_BRANCH_PATTERN_PREFIX + ".+";
-	private static final int MAX_RETRY_ATTEMPTS = 60;
 
 	private GitLabApi gitlab;
 	private GitLabApi gitlabApprover;
@@ -404,9 +406,9 @@ public class GitLabService {
 		final Long mrNumber = mr.getIid();
 		final Long project = mr.getProjectId();
 
-		int countDownWaitingApprovals = MAX_RETRY_ATTEMPTS;
+		int countDownWaitingApprovals = maxRetryAttempts;
 		while (!isMergeRequestApproved(gitlabEventUUID, mr) && countDownWaitingApprovals-- > 0) {
-			Log.infof("GitlabEvent: '%s' | Waiting for approvals in MR '!%d' in project '%d'. Retrying... %d", gitlabEventUUID, mrNumber, project, Math.abs(countDownWaitingApprovals - MAX_RETRY_ATTEMPTS));
+			Log.infof("GitlabEvent: '%s' | Waiting for approvals in MR '!%d' in project '%d'. Retrying... %d", gitlabEventUUID, mrNumber, project, Math.abs(countDownWaitingApprovals - maxRetryAttempts));
 			sleepSeconds(1);
 		}
 		if (countDownWaitingApprovals < 0) {
@@ -432,7 +434,7 @@ public class GitLabService {
 					.withMergeCommitMessage(String.format("%s Automatic merge: '%s' -> '%s'", UCASCADE_TAG, sourceBranchPretty, targetBranch))
 					.withShouldRemoveSourceBranch(mr.getForceRemoveSourceBranch());
 
-			int countDownWaitingMerged = MAX_RETRY_ATTEMPTS;
+			int countDownWaitingMerged = maxRetryAttempts;
 			while (state != MergeRequestUcascadeState.MERGED && countDownWaitingMerged-- > 0) {
 				boolean hasPipeline = hasPipeline(gitlabEventUUID, mr);
 				acceptMrParams.withMergeWhenPipelineSucceeds(hasPipeline);
@@ -446,7 +448,7 @@ public class GitLabService {
 						state = MergeRequestUcascadeState.NOT_MERGED_UNKNOWN_REASON;
 						mr = assignMrToCascadeResponsible(gitlabEventUUID, mr);
 					} else {
-						Log.infof("GitlabEvent: '%s' | Merge failed for MR '!%d', status '%s'. Retrying... %d", gitlabEventUUID, mrNumber, mergeStatus, Math.abs(countDownWaitingMerged - MAX_RETRY_ATTEMPTS));
+						Log.infof("GitlabEvent: '%s' | Merge failed for MR '!%d', status '%s'. Retrying... %d", gitlabEventUUID, mrNumber, mergeStatus, Math.abs(countDownWaitingMerged - maxRetryAttempts));
 						sleepSeconds(1);
 					}
 				}
@@ -504,7 +506,7 @@ public class GitLabService {
 
 	private MergeRequest waitForMrReady(String gitlabEventUUID, MergeRequest mr) {
 		boolean approverExists = gitlabApprover != null;
-		int countDown = MAX_RETRY_ATTEMPTS;
+		int countDown = maxRetryAttempts;
 		String mrStatus = mr.getDetailedMergeStatus();
 		while (!isMrReady(mrStatus, approverExists, mr.getHasConflicts()) && countDown-- > 0) {
 			sleepSeconds(1);
