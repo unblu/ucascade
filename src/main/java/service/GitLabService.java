@@ -31,6 +31,7 @@ import org.gitlab4j.api.models.MergeRequestParams;
 import org.gitlab4j.models.Constants.MergeRequestState;
 
 import controller.model.CascadeResult;
+import controller.model.SquashOption;
 import controller.model.DeleteBranchResult;
 import controller.model.MergeRequestResult;
 import controller.model.MergeRequestSimple;
@@ -62,6 +63,9 @@ public class GitLabService {
 
 	@ConfigProperty(name = "ucascade.max-retry-attempts", defaultValue = "60")
 	int maxRetryAttempts;
+
+	@ConfigProperty(name = "ucascade.squash", defaultValue = "DEFAULT")
+	SquashOption squashOption;
 
 	@Inject
 	GitInfo gitInfo;
@@ -287,6 +291,7 @@ public class GitLabService {
 		mrParams.withDescription(description);
 		mrParams.withAssigneeId(ucascadeUser);
 		mrParams.withRemoveSourceBranch(true);
+		mrParams.withSquash(squashOption.toBoolean());
 
 		MergeRequest mr;
 		try {
@@ -432,7 +437,8 @@ public class GitLabService {
 			String targetBranch = mr.getTargetBranch();
 			AcceptMergeRequestParams acceptMrParams = new AcceptMergeRequestParams()
 					.withMergeCommitMessage(String.format("%s Automatic merge: '%s' -> '%s'", UCASCADE_TAG, sourceBranchPretty, targetBranch))
-					.withShouldRemoveSourceBranch(mr.getForceRemoveSourceBranch());
+					.withShouldRemoveSourceBranch(mr.getForceRemoveSourceBranch())
+					.withSquash(squashOption.toBoolean());
 
 			int countDownWaitingMerged = maxRetryAttempts;
 			while (state != MergeRequestUcascadeState.MERGED && countDownWaitingMerged-- > 0) {
