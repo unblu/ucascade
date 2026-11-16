@@ -11,3 +11,47 @@ Example:
 ----
 include::ucascade.json[]
 ----
+
+=== Commit status for the automatic merge requests [[auto-mr-commit-status]]
+
+Optional. When `autoMrCommitStatus` is present, ucascade sets a commit status `success` on the commit of every automatic merge request it creates, for its temporary `mr<N>_<branch>` branch, before creating the merge request:
+
+[source, json]
+----
+{
+  "branches" : [ ... ],
+  "autoMrCommitStatus" : {
+    "name" : "ucascade"
+  }
+}
+----
+
+* `name`: the name of the commit status, `ucascade` when it is left out (`"autoMrCommitStatus" : { }`).
+
+It is meant for a project that requires a successful pipeline to merge (_Settings → Merge requests → Pipelines must succeed_) and whose CI creates no pipeline for the automatic merge requests.
+The commit of an automatic merge request was already built on the branch it comes from, so building it again only delays the cascade, and a flaky test can stop it.
+But GitLab refuses to merge a merge request that has no pipeline at all when a successful pipeline is required.
+GitLab turns the commit status into an external pipeline, so the merge request has a successful pipeline and ucascade merges it at once (see xref:30_technical-documentation.adoc[created_auto_mr]).
+
+The CI has to create no pipeline for what the ucascade user itself does on the temporary branch: the branch creation and the merge request.
+With GitLab CI, a `workflow:rules` entry in front of the project's other rules:
+
+[source, yaml]
+----
+workflow:
+  rules:
+    # No pipeline for ucascade's own temporary branch and automatic merge request:
+    # their commit was built on the branch it comes from, and ucascade reports it as successful.
+    # CI_COMMIT_REF_NAME is the source branch in a merge request pipeline too.
+    - if: $CI_COMMIT_REF_NAME =~ /^mr\d+_/ && $GITLAB_USER_LOGIN == "<ucascade user name>"
+      when: never
+    # ... the project's other rules
+----
+
+`<ucascade user name>` is the GitLab user name of the API token ucascade runs with.
+The rule matches only the pipelines that user starts: when a person pushes to the temporary branch, for example to resolve a conflict, the pipeline runs as usual, and the merge request waits for it.
+
+WARNING: Do not enable `autoMrCommitStatus` in a project whose CI does run a pipeline for the automatic merge requests.
+The successful commit status would let the merge request be merged without waiting for that pipeline.
+
+The configuration is read from the commit that is cascaded, as the branches are, so each branch can enable it on its own, together with its CI configuration.

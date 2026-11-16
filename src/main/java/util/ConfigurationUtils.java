@@ -11,6 +11,10 @@ public class ConfigurationUtils {
 
 	public static String getNextTargetBranch(String branchModel, String sourceBranchName) {
 		Config config = JsonUtils.getConfigFromString(branchModel);
+		return getNextTargetBranch(config, sourceBranchName);
+	}
+
+	public static String getNextTargetBranch(Config config, String sourceBranchName) {
 		List<ConfigBranches> branches = config.getBranches();
 		if (branches != null) {
 			for (final ConfigBranches branch : branches) {

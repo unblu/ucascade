@@ -4,12 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Config {
 
 	@JsonProperty("branches")
 	private List<ConfigBranches> branches;
+
+	@JsonProperty("autoMrCommitStatus")
+	@JsonInclude(Include.NON_NULL)
+	private ConfigAutoMrCommitStatus autoMrCommitStatus;
 
 	public List<ConfigBranches> getBranches() {
 		return branches;
@@ -27,9 +33,22 @@ public class Config {
 		return this;
 	}
 
+	public ConfigAutoMrCommitStatus getAutoMrCommitStatus() {
+		return autoMrCommitStatus;
+	}
+
+	public void setAutoMrCommitStatus(ConfigAutoMrCommitStatus autoMrCommitStatus) {
+		this.autoMrCommitStatus = autoMrCommitStatus;
+	}
+
+	public Config withAutoMrCommitStatus(ConfigAutoMrCommitStatus value) {
+		setAutoMrCommitStatus(value);
+		return this;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(branches);
+		return Objects.hash(autoMrCommitStatus, branches);
 	}
 
 	@Override
@@ -41,6 +60,7 @@ public class Config {
 		if (getClass() != obj.getClass())
 			return false;
 		Config other = (Config) obj;
-		return Objects.equals(branches, other.branches);
+		return Objects.equals(autoMrCommitStatus, other.autoMrCommitStatus) &&
+				Objects.equals(branches, other.branches);
 	}
 }

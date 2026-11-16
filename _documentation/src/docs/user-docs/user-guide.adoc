@@ -19,6 +19,7 @@ Once you have merged, the tool creates a follow-up MR (called _cascade MR_ in th
 image::mr_happy-case.png[]
 
 This _cascade MR_ is configured to be merged automatically as soon as the pipeline succeeds, or immediately if no pipeline is configured.
+A project can skip the pipeline of the _cascade MR_ and let ucascade report its commit as successfully built, since it was built on the branch it comes from (see the `autoMrCommitStatus` option of the configuration file).
 
 And because 2 merges are needed for the complete cascade, the same pattern will happen again to obtain a merge between the main branches `main/1.3.x` and `main/2.0.x`.
 Because two merges are required for the complete cascade, the same pattern applies again to obtain a merge between the main branches `main/1.3.x` and `main/2.0.x`.

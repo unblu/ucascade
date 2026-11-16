@@ -67,6 +67,12 @@ Before attempting to merge, `ucascade` waits for the merge request to receive th
 
 During the final stage of the success case -- merging the MR -- `ucascade` verifies if that MR has any pipeline configured. If it has, the flag `merge_when_pipeline_succeeds` is set to `true`, meaning that the merge is only to happen after all its pipelines have finished successfully. Otherwise, if it doesn't have any pipeline, this flag is set to `false`, preventing GitLab to return a 405 error (see https://gitlab.com/gitlab-org/gitlab/-/issues/355455[issue #355455] for more details).
 
+A project that requires a successful pipeline to merge (_Pipelines must succeed_) cannot merge a merge request that has no pipeline at all: the merge attempt fails, and ucascade assigns the merge request to the cascade responsible.
+A project whose CI skips the automatic merge requests can enable `autoMrCommitStatus` in its configuration file (see xref:11_ucascade-configuration-file.adoc#auto-mr-commit-status[Commit status for the automatic merge requests]).
+ucascade then sets a commit status `success` on the commit, for the temporary branch, right after creating that branch.
+GitLab turns it into an external pipeline of the merge request, so `merge_when_pipeline_succeeds` is set to `true` and GitLab merges at once, the pipeline having succeeded already.
+If the commit status cannot be set, ucascade logs a warning and continues as without it.
+
 ==== existing_branch_deleted
 
 Whenever a user closes an auto merge-request, the source branch is not deleted automatically. Additionally, sometimes when a merge-request is merged, its source branch is not deleted by gitlab. Ucascade makes sure that in both of these situations, the source branch gets deleted.
