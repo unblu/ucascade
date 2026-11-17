@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
@@ -16,8 +17,10 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -722,6 +725,50 @@ class UcascadeTest {
 	}
 
 	@Test
+	void testSuccessCaseAutoMrCommitStatus() throws Exception {
+		// when the configuration file enables 'autoMrCommitStatus',
+		// expect a 'success' commit status on the merge commit, for the temporary branch, before the auto-merge request !101 is created.
+		// GitLab lists the resulting external pipeline for the MR, so ucascade merges it when the pipeline succeeds.
+		Long mrNumber = 101L;
+		String nextMainBranch = GitlabMockUtil.DEFAULT_TARGET_BRANCH;
+		String tmpBranch = "mr100_release/6.x.x";
+		String configWithStatus = branchModelContent.trim().replaceFirst("\\}$", ",\n  \"autoMrCommitStatus\" : { \"name\" : \"cascade-check\" }\n}");
+
+		setupCreateBranchStub(GitlabMockUtil.PROJECT_ID, tmpBranch, GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, null);
+		setupAddCommitStatusStub(GitlabMockUtil.PROJECT_ID, GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA);
+		setupGetBranchStub(GitlabMockUtil.PROJECT_ID, nextMainBranch, null);
+		setupGetEmptyOpenMergeRequestStub(GitlabMockUtil.PROJECT_ID);
+		Map<String, Object> customProperties = Map.of("detailed_merge_status", "\"checking\"");
+		setupCreateMergeRequestStub(GitlabMockUtil.PROJECT_ID, customProperties);
+		setupAcceptMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, null, true, true);
+		setupApproveMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, null);
+		setupGetMergeRequestApprovalsStub(GitlabMockUtil.PROJECT_ID, mrNumber, null);
+		setupGetMergeRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, null);
+		customProperties = Map.of("source_branch", "\"something\"");
+		setupGetMergeRequestStub(GitlabMockUtil.PROJECT_ID, (mrNumber - 1), customProperties);
+		setupGetMRPipelinesRequestStub(GitlabMockUtil.PROJECT_ID, mrNumber, true);
+		setupGetFileFromRepositoryRequestStub(GitlabMockUtil.PROJECT_ID, "ucascade.json", GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, configWithStatus);
+		setupCompareBranchesRequestStub(GitlabMockUtil.PROJECT_ID, GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA, nextMainBranch, true);
+		MergeRequestSimple mrSimple = GitlabMockUtil.createDefaultMREvent();
+
+		given().when()
+				.header("Content-Type", "application/json")
+				.body(mrSimple)
+				.post("/ucascade/replay")
+				.then()
+				.statusCode(Response.Status.OK.getStatusCode())
+				.body("created_auto_mr.mr_number", equalTo(mrNumber.intValue()))
+				.body("created_auto_mr.source_branch", equalTo(tmpBranch))
+				.body("created_auto_mr.ucascade_state", equalTo(MergeRequestUcascadeState.MERGED.name()));
+
+		verifyRequests(14);
+		wireMockServer.verify(1, postRequestedFor(urlPathEqualTo(API_PREFIX + "projects/" + GitlabMockUtil.PROJECT_ID + "/statuses/" + GitlabMockUtil.MR_EVENT_MERGE_COMMIT_SHA))
+				.withRequestBody(containing("state=success"))
+				.withRequestBody(containing("ref=mr100_release%2F6.x.x"))
+				.withRequestBody(containing("name=cascade-check")));
+	}
+
+	@Test
 	void testGetPrevMRFromBranchName() {
 		Assertions.assertEquals(GitLabService.getPrevMergeRequestNumber("mr123_something"),
 				123L);
@@ -1061,6 +1108,28 @@ class UcascadeTest {
 						.willReturn(aResponse()
 								.withHeader("Content-Type", "application/json")
 								.withBody(GitlabMockUtil.get(GitlabAction.GET_FILE, null))));
+	}
+
+	private void setupGetFileFromRepositoryRequestStub(Long projectId, String filePath, String ref, String fileContent) {
+		String encoded = Base64.getEncoder().encodeToString(fileContent.getBytes(StandardCharsets.UTF_8));
+		String body = GitlabMockUtil.get(GitlabAction.GET_FILE, null)
+				.replaceFirst("(\"content\"\\s*:\\s*)\"[^\"]*\"", "$1\"" + encoded + "\"");
+		wireMockServer.stubFor(
+				get(urlPathEqualTo(API_PREFIX + "projects/" + projectId + "/repository/files/" + UrlEncoder.urlEncode(filePath)))
+						.withHeader(API_AUTH_KEY_NAME, WireMock.equalTo(apiToken))
+						.withQueryParam("ref", WireMock.equalTo(ref))
+						.willReturn(aResponse()
+								.withHeader("Content-Type", "application/json")
+								.withBody(body)));
+	}
+
+	private void setupAddCommitStatusStub(Long projectId, String sha) {
+		wireMockServer.stubFor(
+				post(urlPathEqualTo(API_PREFIX + "projects/" + projectId + "/statuses/" + sha))
+						.withHeader(API_AUTH_KEY_NAME, WireMock.equalTo(apiToken))
+						.willReturn(aResponse()
+								.withHeader("Content-Type", "application/json")
+								.withBody("{ \"id\" : 1, \"sha\" : \"" + sha + "\", \"status\" : \"success\" }")));
 	}
 
 	private void setupGetMRPipelinesRequestStub(Long projectId, Long mrId, boolean hasPipelines) {

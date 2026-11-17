@@ -22,6 +22,7 @@ import com.unblu.ucascade.util.GitlabMockUtil.GitlabAction;
 
 import controller.model.CascadeResult;
 import controller.model.Config;
+import controller.model.ConfigAutoMrCommitStatus;
 import controller.model.ConfigBranches;
 import controller.model.DeleteBranchResult;
 import controller.model.MergeRequestResult;
@@ -64,6 +65,26 @@ class JsonUtilsTest {
 
 		Assertions.assertEquals(expected, config);
 		Assertions.assertEquals(expectedContent, content);
+	}
+
+	@Test
+	void testParseConfigAutoMrCommitStatus() throws Exception {
+		String branches = """
+				"branches" : [ {
+				  "sourceBranchPattern" : "main/1\\.2\\.x",
+				  "targetBranch" : "main/1.3.x"
+				} ]""";
+
+		Config without = JsonUtils.getConfigFromString("{" + branches + "}");
+		Assertions.assertNull(without.getAutoMrCommitStatus());
+
+		Config named = JsonUtils.getConfigFromString("{" + branches + ", \"autoMrCommitStatus\" : { \"name\" : \"cascade\" } }");
+		Assertions.assertEquals(new ConfigAutoMrCommitStatus().withName("cascade"), named.getAutoMrCommitStatus());
+		Assertions.assertEquals("cascade", named.getAutoMrCommitStatus().getNameOrDefault());
+
+		Config unnamed = JsonUtils.getConfigFromString("{" + branches + ", \"autoMrCommitStatus\" : { } }");
+		Assertions.assertNotNull(unnamed.getAutoMrCommitStatus());
+		Assertions.assertEquals(ConfigAutoMrCommitStatus.DEFAULT_NAME, unnamed.getAutoMrCommitStatus().getNameOrDefault());
 	}
 
 	@Test

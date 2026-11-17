@@ -26,11 +26,15 @@ import org.gitlab4j.api.MergeRequestApi;
 import org.gitlab4j.api.models.AcceptMergeRequestParams;
 import org.gitlab4j.api.models.Assignee;
 import org.gitlab4j.api.models.Branch;
+import org.gitlab4j.api.models.CommitStatus;
 import org.gitlab4j.api.models.MergeRequest;
 import org.gitlab4j.api.models.MergeRequestParams;
+import org.gitlab4j.models.Constants.CommitBuildState;
 import org.gitlab4j.models.Constants.MergeRequestState;
 
 import controller.model.CascadeResult;
+import controller.model.Config;
+import controller.model.ConfigAutoMrCommitStatus;
 import controller.model.DeleteBranchResult;
 import controller.model.MergeRequestResult;
 import controller.model.MergeRequestSimple;
@@ -42,6 +46,7 @@ import io.quarkus.vertx.ConsumeEvent;
 import io.smallrye.common.annotation.Blocking;
 import io.vertx.mutiny.core.eventbus.EventBus;
 import util.ConfigurationUtils;
+import util.JsonUtils;
 
 @ApplicationScoped
 public class GitLabService {
@@ -210,7 +215,8 @@ public class GitLabService {
 
 	private void createAutoMr(CascadeResult result, String gitlabEventUUID, Long projectId, String prevMrSourceBranch, String sourceBranch, Long mrNumber, String mergeSha) {
 		String branchModel = getBranchModelConfigurationFile(gitlabEventUUID, projectId, mergeSha);
-		String nextMainBranch = ConfigurationUtils.getNextTargetBranch(branchModel, sourceBranch);
+		Config config = JsonUtils.getConfigFromString(branchModel);
+		String nextMainBranch = ConfigurationUtils.getNextTargetBranch(config, sourceBranch);
 
 		if (nextMainBranch != null) {
 			Branch branch = getBranch(gitlabEventUUID, projectId, nextMainBranch);
@@ -220,6 +226,9 @@ public class GitLabService {
 			if (haveDiff(gitlabEventUUID, projectId, mergeSha, nextMainBranch)) {
 				String tmpBranchName = "mr" + mrNumber + "_" + sourceBranch;
 				createBranch(gitlabEventUUID, projectId, tmpBranchName, mergeSha);
+				if (config.getAutoMrCommitStatus() != null) {
+					setAutoMrCommitStatus(gitlabEventUUID, projectId, mergeSha, tmpBranchName, sourceBranch, config.getAutoMrCommitStatus());
+				}
 				sleepSeconds(5); // give Gitlab time to recognize newly created branch
 				MergeRequestResult mrResult = merge(gitlabEventUUID, projectId, sourceBranch, mrNumber, tmpBranchName, nextMainBranch);
 				result.setCreatedAutoMr(mrResult);
@@ -228,6 +237,25 @@ public class GitLabService {
 			}
 		} else {
 			Log.infof("GitlabEvent: '%s' | No target branch for '%s' found - nothing to do", gitlabEventUUID, sourceBranch);
+		}
+	}
+
+	/**
+	 * Report the commit of the automatic merge request as successfully built, through a commit status on the temporary branch. GitLab turns it into an external
+	 * pipeline, so the merge request can be merged when the project requires a successful pipeline and its CI creates none for the automatic merge request. The
+	 * commit was already built on the branch it comes from.
+	 */
+	private void setAutoMrCommitStatus(String gitlabEventUUID, Long project, String sha, String tmpBranchName, String sourceBranch, ConfigAutoMrCommitStatus statusConfig) {
+		String name = statusConfig.getNameOrDefault();
+		CommitStatus status = new CommitStatus()
+				.withRef(tmpBranchName)
+				.withName(name)
+				.withDescription(String.format("Already built on '%s', no pipeline needed for the automatic merge", sourceBranch));
+		try {
+			Log.infof("GitlabEvent: '%s' | Setting commit status '%s' to 'success' on '%s' (branch '%s')", gitlabEventUUID, name, sha, tmpBranchName);
+			gitlab.getCommitsApi().addCommitStatus(project, sha, CommitBuildState.SUCCESS, status);
+		} catch (GitLabApiException e) {
+			Log.warnf(e, "GitlabEvent: '%s' | Cannot set commit status '%s' on '%s' (branch '%s') in project '%d'", gitlabEventUUID, name, sha, tmpBranchName, project);
 		}
 	}
 
